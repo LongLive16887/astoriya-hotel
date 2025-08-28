@@ -8,7 +8,7 @@ export const roomsData = {
       price: 130,
       priceUZS: "1,700,000",
       priceRUB: "12,500",
-      image: "/src/assets/room-1.png",
+      image: "/room-1.png",
       features: ["wifi", "breakfast", "threeBeds", "threePeople"],
       buttonText: "Select Package"
     },
@@ -18,7 +18,7 @@ export const roomsData = {
       price: 163,
       priceUZS: "2,130,000",
       priceRUB: "15,700",
-      image: "/src/assets/room-2.png",
+      image: "/room-2.png",
       features: ["wifi", "breakfast", "threeBeds", "fourPeople"],
       buttonText: "Select Package"
     },
@@ -28,7 +28,7 @@ export const roomsData = {
       price: 100,
       priceUZS: "1,300,000",
       priceRUB: "9,600",
-      image: "/src/assets/room-3.png",
+      image: "/room-3.png",
       features: ["wifi", "breakfast", "twoBeds", "twoPeople"],
       buttonText: "Select Package"
     }

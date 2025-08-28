@@ -1,7 +1,7 @@
 export const servicesData = {
   title: "See Our Services",
   description: "Lorem ipsum, dolor sit amet consectetur elit. Consectetur debitis nobis.",
-  image: "/src/assets/services.jpg",
+  image: "/services.jpg",
   services: [
     { name: "Quality Food", icon: "fa-cutlery", color: "orange" },
     { name: "Sauna & Hammam", icon: "fa-lock", color: "blue" },
