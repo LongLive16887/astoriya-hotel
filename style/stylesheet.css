@@ -39,7 +39,7 @@ h2::after {
   content: "";
   display: block;
   width: 30%;
-  border-top: 2.5px solid #1a6b54;
+  border-top: 2.5px solid #8b5e34;
   margin-top: 20px;
   margin: 0 auto;
 }
@@ -49,7 +49,7 @@ h3::after {
   display: block;
   text-align: center;
   width: 30%;
-  border-top: 2.5px solid #1a6b54;
+  border-top: 2.5px solid #8b5e34;
   margin-top: 20px;
   margin: 0 auto;
 }
@@ -70,7 +70,7 @@ h5 {
 .logo a {
   font-weight: bold;
   font-size: 1rem;
-  color: #1a6b54;
+  color: #8b5e34;
 }
 
 .left-navbar {
@@ -98,7 +98,7 @@ h5 {
 }
 
 .navbar-option a:hover {
-  border-bottom: 1px solid #1a6b54;
+  border-bottom: 1px solid #8b5e34;
   transition: 0.5s all;
 }
 
@@ -107,11 +107,11 @@ h5 {
   padding-top: 2px;
   font-weight: bold;
   font-size: 0.9rem;
-  color: #1a6b54;
+  color: #8b5e34;
 }
 
 .right-navbar a:hover {
-  color: #0c382c;
+  color: #5c3d1e;
 }
 
 .navbar .hamburger {
@@ -136,13 +136,13 @@ h5 {
 .main-text {
   height: 100%;
   width: 50%;
-  background-color: #1a6b54;
+  background-color: #8b5e34;
 }
 
 .main-image {
   height: 100%;
   width: 50%;
-  background-image: url("../img/japan-views.jpg");
+  background-image: url("../img/main.png");
   image-rendering: optimizeSpeed;
   background-repeat: no-repeat;
   background-size: cover;
@@ -187,13 +187,13 @@ h5 {
 
 .continue-button a {
   padding: 13px 18px;
-  background-color: #1a6b54;
+  background-color: #8b5e34;
   border-radius: 4px;
   color: #fff;
 }
 
 .continue-button a:hover {
-  background-color: #0c382c;
+  background-color: #5c3d1e;
   transition: 0.5s all;
 }
 
@@ -206,7 +206,7 @@ h5 {
   display: block;
   text-align: center;
   width: 30%;
-  border-top: 2px solid #1a6b54;
+  border-top: 2px solid #8b5e34;
   margin-top: 20px;
   margin: 0 auto;
 }
@@ -277,8 +277,8 @@ h5 {
 
 .green {
   padding: 17px 19px;
-  background-color: rgba(36, 112, 68, 0.1);
-  color: rgba(36, 112, 68, 1);
+  background-color: rgba(139, 94, 52, 0.1);
+  color: rgba(139, 94, 52, 1);
 }
 
 .purple {
@@ -328,7 +328,7 @@ h5 {
 }
 
 .plan-card:hover {
-  background-color: #e6f7f2;
+  background-color: #f3e9e1;
   box-shadow: none;
   transition: 1s all;
 }
@@ -347,11 +347,11 @@ h5 {
   border: 1px solid rgba(60, 60, 60, 0.2);
   border-radius: 7px;
   font-size: 0.8rem;
-  color: #31b077;
+  color: #8b5e34;
 }
 
 .select-package a:hover {
-  background-color: #1a6b54;
+  background-color: #8b5e34;
   color: #fff;
   transition: 0.5s all;
 }
@@ -507,7 +507,7 @@ h5 {
 
 .fa-quote-left {
   font-size: 2rem !important;
-  color: #e6f7f2;
+  color: #f3e9e1;
 }
 
 .italic {
@@ -541,8 +541,8 @@ h5 {
 
 .more-information-section {
   padding-top: 55px;
-  padding-bottom: 230px;
-  background-color: #e6f7f2;
+  padding-bottom: 120px;
+  background-color: #f3e9e1;
 }
 
 .more-information-section a {
@@ -566,44 +566,15 @@ h5 {
 }
 
 .company-info {
-  float: left;
-  width: 30%;
+  float: none;
+  width: 100%;
 }
 
 .company-info p {
   width: 80%;
 }
 
-.legal a {
-  padding-bottom: 7px;
-}
-
-.legal {
-  float: left;
-  width: 20%;
-}
-
-.resources a {
-  padding-bottom: 7px;
-}
-
-.resources {
-  float: left;
-  width: 20%;
-}
-
-.newsletter a {
-  padding-bottom: 7px;
-}
-
-.newsletter {
-  float: left;
-  width: 30%;
-}
-
-.newsletter p {
-  width: 90%;
-}
+.legal, .resources, .newsletter { display: none; }
 
 input {
   width: 190px;
@@ -611,7 +582,7 @@ input {
   padding: 15px 20px;
   font-size: 0.8rem;
   border: 1.5px solid rgba(60, 60, 60, 0.8);
-  background-color: #e6f7f2;
+  background-color: #f3e9e1;
   border-top-left-radius: 2px;
   border-bottom-left-radius: 2px;
   float: left;
@@ -623,7 +594,7 @@ input {
   font-family: "Poppins", sans-serif;
   font-size: 0.7rem;
   width: 80px;
-  background-color: #1a6b54;
+  background-color: #8b5e34;
   color: #fff;
   border: none;
   border-top-right-radius: 2px;
@@ -636,7 +607,7 @@ input {
 .social-media span {
   padding: 7px;
   background-color: #fff;
-  color: #1a6b54;
+  color: #8b5e34;
   border-radius: 90px;
   margin-right: 10px;
 }
@@ -648,16 +619,64 @@ input {
 }
 
 footer {
-  background-color: #1a6b54;
+  background-color: #8b5e34;
   width: 100%;
-  height: 80px;
+  height: auto;
+  padding: 30px 0;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.footer-info {
+  color: white;
+  flex: 1;
+}
+
+.footer-info h4 {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  color: white;
+}
+
+.footer-info p {
+  margin: 5px 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+}
+
+.social-media {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.social-media span {
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 50%;
+  margin-right: 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.social-media span:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .white {
   color: white;
-  text-align: right;
-  padding-top: 30px;
+  text-align: center;
+  padding-top: 20px;
   margin: 0px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 20px;
 }
 
 .white p {
@@ -666,6 +685,117 @@ footer {
 
 footer p {
   font-size: 13px;
+}
+
+/* Social Links Styles */
+.social-links {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.social-link.telegram {
+  background-color: #0088cc;
+  color: white;
+}
+
+.social-link.telegram:hover {
+  background-color: #006699;
+  transform: translateY(-2px);
+}
+
+.social-link.instagram {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  color: white;
+}
+
+.social-link.instagram:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.social-link .icon {
+  font-size: 16px;
+}
+
+/* Price Display Styles */
+.price-uzs, .price-rub {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.price-uzs span, .price-rub span {
+  font-weight: 600;
+  color: #8b5e34;
+}
+
+/* Responsive price styles */
+@media (max-width: 768px) {
+  .price-uzs, .price-rub {
+    font-size: 12px;
+  }
+  
+  .price-uzs span, .price-rub span {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .price-uzs, .price-rub {
+    font-size: 11px;
+  }
+  
+  .price-uzs span, .price-rub span {
+    font-size: 12px;
+  }
+}
+
+/* Improve room card responsiveness */
+@media (max-width: 768px) {
+  .plan-card {
+    margin-bottom: 30px !important;
+  }
+  
+  .plan-content h4 {
+    font-size: 18px;
+  }
+  
+  .features p {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .plan-card {
+    margin-bottom: 25px !important;
+  }
+  
+  .plan-content h4 {
+    font-size: 16px;
+  }
+  
+  .features p {
+    font-size: 12px;
+  }
+  
+  .select-package a {
+    font-size: 13px;
+    padding: 8px 16px;
+  }
 }
 
 .clear {
