@@ -40,22 +40,6 @@ src/
    npm run dev
    ```
 
-### 🔥 Настройка Firebase
-
-1. Создайте проект в Firebase и включите Firestore Database
-2. Создайте файл `.env` в корне проекта и добавьте переменные:
-
-```
-VITE_FIREBASE_API_KEY=YOUR_KEY
-VITE_FIREBASE_AUTH_DOMAIN=YOUR_DOMAIN
-VITE_FIREBASE_PROJECT_ID=YOUR_PROJECT
-VITE_FIREBASE_STORAGE_BUCKET=YOUR_BUCKET
-VITE_FIREBASE_MESSAGING_SENDER_ID=YOUR_SENDER
-VITE_FIREBASE_APP_ID=YOUR_APP_ID
-```
-
-3. Перезапустите dev-сервер
-
 3. **Соберите проект для продакшена:**
    ```bash
    npm run build
