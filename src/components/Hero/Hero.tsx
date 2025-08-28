@@ -7,7 +7,7 @@ const Hero = () => {
       <div className="main-contents">
         <div className="main-text">
           <div className="container-main">
-            {t<string[]>('hero.headlines', { returnObjects: true }).map((headline, index) => (
+            {(t('hero.headlines', { returnObjects: true }) as string[]).map((headline, index) => (
               <h1 key={index}>{headline}</h1>
             ))}
             <p className="main">{t('hero.description')}</p>

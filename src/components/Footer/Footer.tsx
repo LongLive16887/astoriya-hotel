@@ -1,5 +1,4 @@
 import { footerData } from './mockdata'
-import { contactData } from '../Contact/mockdata'
 import { useTranslation } from 'react-i18next'
 
 const Footer = () => {
