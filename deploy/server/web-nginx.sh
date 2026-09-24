@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Adds the site to an nginx that already serves other sites, and gets its HTTPS certificate
-# with certbot: DOMAIN=example.uz WWW=1 PORT=3001 bash web-nginx.sh (called by setup.sh).
+# with certbot: DOMAIN=example.uz WWW=1 PORT=3100 bash web-nginx.sh (called by setup.sh).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOMAIN="${DOMAIN:-}"
 WWW="${WWW:-0}"
-port="${PORT:-3001}"
+port="${PORT:-3100}"
 step() { printf '\n==> %s\n' "$*"; }
 fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 apt_get() { apt-get -o DPkg::Lock::Timeout=600 "$@"; }

@@ -106,14 +106,22 @@ if [ ! -f /etc/astoria/astoria.env ]; then
   cat > /etc/astoria/astoria.env <<ENV
 NODE_ENV=production
 HOST=127.0.0.1
-PORT=3001
+PORT=3100
 DATA_DIR=/var/lib/astoria
 TRUST_PROXY=1
 ENV
 fi
-grep -q '^PORT=' /etc/astoria/astoria.env || echo 'PORT=3001' >> /etc/astoria/astoria.env
+grep -q '^PORT=' /etc/astoria/astoria.env || echo 'PORT=3100' >> /etc/astoria/astoria.env
 port="$(sed -n 's/^PORT=//p' /etc/astoria/astoria.env)"
-if ss -ltnpH "sport = :$port" | grep -v '"node"' | grep -q .; then fail "port $port is taken by another program; change PORT in /etc/astoria/astoria.env"; fi
+# The port must be free of other programs, and of other sites' nginx configs: a site whose program
+# is stopped still points at its port.
+our_pid="$(systemctl show -p MainPID --value astoria.service 2>/dev/null || true)"
+if ss -ltnpH "sport = :$port" | grep -v "pid=${our_pid:-0}," | grep -q .; then
+  fail "port $port is taken by another program; change PORT in /etc/astoria/astoria.env"
+fi
+if [ -d /etc/nginx ] && grep -RlsE "(127\.0\.0\.1|localhost):$port([^0-9]|\$)" /etc/nginx/sites-enabled /etc/nginx/conf.d | grep -v '/astoria\.conf$' | grep -q .; then
+  fail "another site in nginx sends requests to port $port; change PORT in /etc/astoria/astoria.env"
+fi
 
 step "Installing the services"
 install -m 755 "$HERE/astoria-deploy.sh" /opt/astoria/bin/astoria-deploy

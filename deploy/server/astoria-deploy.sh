@@ -14,7 +14,7 @@ PORT="$(sed -n 's/^PORT=//p' /etc/astoria/astoria.env)"
 
 log() { echo "astoria-deploy: $*"; }
 current() { local target; target="$(readlink "$ROOT/current" 2>/dev/null)" || { echo none; return; }; basename "$target"; }
-health_version() { curl -fsS --max-time 3 "http://127.0.0.1:${PORT:-3001}/api/health" 2>/dev/null | sed -n 's/.*"version":"\([^"]*\)".*/\1/p'; }
+health_version() { curl -fsS --max-time 3 "http://127.0.0.1:${PORT:-3100}/api/health" 2>/dev/null | sed -n 's/.*"version":"\([^"]*\)".*/\1/p'; }
 
 backup() {
   [ -e "$ROOT/current/server/index.mjs" ] || return 0

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Publishes the site with Caddy on a server where nothing else uses ports 80/443:
-# DOMAIN=example.uz WWW=1 PORT=3001 bash web-caddy.sh (called by setup.sh).
+# DOMAIN=example.uz WWW=1 PORT=3100 bash web-caddy.sh (called by setup.sh).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOMAIN="${DOMAIN:-}"
 WWW="${WWW:-0}"
-port="${PORT:-3001}"
+port="${PORT:-3100}"
 step() { printf '\n==> %s\n' "$*"; }
 fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 apt_get() { apt-get -o DPkg::Lock::Timeout=600 "$@"; }

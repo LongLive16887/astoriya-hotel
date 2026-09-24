@@ -70,7 +70,10 @@ jobs:
           . deploy/config.env
           if [ "${SETUP_MODE:-inspect}" != install ]; then exit 0; fi
           if [ -z "$DOMAIN" ]; then
-            curl -fsS --max-time 20 "http://${VPS_HOST:-$SERVER_HOST}/api/health" && echo || echo "::notice::The site is published once DOMAIN is set in deploy/config.env."
+            # Other sites on the server may answer on its address, so only the site's own reply counts.
+            host="$(printf '%s' "${VPS_HOST:-$SERVER_HOST}" | tr -d '[:space:]')"
+            if curl -fsS --max-time 20 "http://$host/api/health" 2>/dev/null | grep -q '"version"'; then echo "The site answers on http://$host"
+            else echo "::notice::The site is installed and running on the server. It is published once DOMAIN is set in deploy/config.env."; fi
             exit 0
           fi
           for i in $(seq 1 12); do
