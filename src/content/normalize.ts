@@ -188,6 +188,11 @@ export function normalizeList<T extends ListItem>(
   return result
 }
 
+/** Items of the `content/{key}` document for one of the list sections. */
+export function normalizeListDoc<K extends ListKey>(key: K, raw: unknown): SiteContent[K] {
+  return normalizeList(raw, LIST_NORMALIZERS[key]) as SiteContent[K]
+}
+
 /**
  * Builds site content from raw `content/*` documents.
  * A missing document (undefined) means "not saved yet" and falls back to the defaults.
@@ -197,9 +202,7 @@ export function normalizeContent(
   defaults: SiteContent,
 ): SiteContent {
   const list = <K extends ListKey>(key: K): SiteContent[K] =>
-    (docs[key] === undefined
-      ? defaults[key]
-      : normalizeList(docs[key], LIST_NORMALIZERS[key])) as SiteContent[K]
+    docs[key] === undefined ? defaults[key] : normalizeListDoc(key, docs[key])
   return {
     settings:
       docs.settings === undefined
