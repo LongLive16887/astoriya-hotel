@@ -6,7 +6,7 @@ import { getAdminAuth } from '../lib/firebase'
 /** Signed in, but the account has no admins/{uid} document yet. */
 export function NoAccess({ user }: { user: User }) {
   return (
-    <div className="a-auth">
+    <main className="a-auth">
       <div className="a-auth__card a-auth__card--wide">
         <ShieldAlert className="a-auth__icon" />
         <h1 className="a-auth__title">Нет доступа к панели</h1>
@@ -42,6 +42,6 @@ export function NoAccess({ user }: { user: User }) {
           </button>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

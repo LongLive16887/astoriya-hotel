@@ -12,6 +12,7 @@ const ru = {
     prev: 'Предыдущее фото',
     next: 'Следующее фото',
     language: 'Язык сайта',
+    mainNav: 'Главное меню',
     photo: 'Фото {{n}} из {{total}}',
     home: 'Astoria — на главную',
     openPhoto: 'Открыть фото: {{caption}}',

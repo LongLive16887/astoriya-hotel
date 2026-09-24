@@ -500,6 +500,11 @@
   min-width: 0;
 }
 
+.a-field__label {
+  display: grid;
+  gap: 6px;
+}
+
 .a-field__top {
   display: flex;
   align-items: flex-end;

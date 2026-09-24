@@ -16,7 +16,7 @@ export function Hero() {
   const { settings } = useContent()
   const openBooking = useOpenBooking()
 
-  const lines = tr(settings.hero.title, lang)
+  const lines = (tr(settings.hero.title, lang) || settings.hotelName)
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean)

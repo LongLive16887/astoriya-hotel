@@ -54,9 +54,9 @@ function AdminGate() {
   const auth = useAuthState()
   if (auth.status === 'loading') {
     return (
-      <div className="a-auth">
+      <main className="a-auth">
         <Spinner />
-      </div>
+      </main>
     )
   }
   if (auth.status === 'signed-out') return <LoginPage />

@@ -14,6 +14,7 @@ const en: Dict = {
     prev: 'Previous photo',
     next: 'Next photo',
     language: 'Site language',
+    mainNav: 'Main menu',
     photo: 'Photo {{n}} of {{total}}',
     home: 'Astoria — home',
     openPhoto: 'Open photo: {{caption}}',

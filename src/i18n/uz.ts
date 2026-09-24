@@ -14,6 +14,7 @@ const uz: Dict = {
     prev: 'Oldingi surat',
     next: 'Keyingi surat',
     language: 'Sayt tili',
+    mainNav: 'Asosiy menyu',
     photo: '{{total}} tadan {{n}}-surat',
     home: 'Astoria — bosh sahifa',
     openPhoto: 'Suratni ochish: {{caption}}',

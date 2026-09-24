@@ -56,7 +56,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="a-auth">
+    <main className="a-auth">
       <form className="a-auth__card" onSubmit={onSubmit}>
         <div className="a-auth__brand">
           <LogoMark className="a-auth__mark" />
@@ -109,6 +109,6 @@ export function LoginPage() {
       <a className="a-auth__back" href="/">
         <ArrowLeft size={16} /> На сайт
       </a>
-    </div>
+    </main>
   )
 }

@@ -69,14 +69,14 @@ export function LocalizedField({ label, value, onChange, multiline, rows = 4, hi
   )
 }
 
-/** Plain labelled field wrapper for non-translated inputs. */
-export function Field({ label, hint, children, htmlFor }: { label: string; hint?: ReactNode; children: ReactNode; htmlFor?: string }) {
+/** Labelled wrapper for a non-translated input (the label wraps the control, the hint stays outside). */
+export function Field({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactNode }) {
   return (
     <div className="a-field">
-      <label className="a-label" htmlFor={htmlFor}>
-        {label}
+      <label className="a-field__label">
+        <span className="a-label">{label}</span>
+        {children}
       </label>
-      {children}
       {hint && <p className="a-hint">{hint}</p>}
     </div>
   )

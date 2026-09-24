@@ -206,13 +206,13 @@ function BookingForm({ prefill, onClose }: { prefill: BookingPrefill; onClose: (
   return (
     <form className="booking__body" onSubmit={onSubmit} noValidate>
       {closeButton}
-      <header className="booking__header">
+      <div className="booking__header">
         <span className="eyebrow">{settings.hotelName}</span>
         <h2 id="booking-title" className="h-card">
           {t('booking.title')}
         </h2>
         <p>{t('booking.subtitle')}</p>
-      </header>
+      </div>
 
       <fieldset className="booking__group">
         <legend>

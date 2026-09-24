@@ -55,7 +55,7 @@ export function Header({ overlay }: { overlay: boolean }) {
           <Logo />
         </Link>
 
-        <nav className="site-header__nav" aria-label={t('footer.navigation')}>
+        <nav className="site-header__nav" aria-label={t('a11y.mainNav')}>
           {NAV_SECTIONS.map((item) => (
             <Link key={item.id} to={sectionLink(item.id)} className="site-header__link">
               {t(item.label)}
@@ -87,7 +87,7 @@ export function Header({ overlay }: { overlay: boolean }) {
 
       <div id="mobile-menu" className="mobile-menu" hidden={!menuOpen}>
         <div className="container mobile-menu__inner">
-          <nav className="mobile-menu__nav" aria-label={t('footer.navigation')}>
+          <nav className="mobile-menu__nav" aria-label={t('a11y.mainNav')}>
             {NAV_SECTIONS.map((item, i) => (
               <Link
                 key={item.id}

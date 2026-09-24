@@ -12,7 +12,7 @@ const VARIABLES = [
 /** Shown when the site is built without Firebase settings. */
 export function SetupScreen() {
   return (
-    <div className="a-auth">
+    <main className="a-auth">
       <div className="a-auth__card a-auth__card--wide">
         <Settings2 className="a-auth__icon" />
         <h1 className="a-auth__title">Подключите Firebase</h1>
@@ -37,6 +37,6 @@ export function SetupScreen() {
           На сайт
         </a>
       </div>
-    </div>
+    </main>
   )
 }
