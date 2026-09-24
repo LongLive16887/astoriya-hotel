@@ -21,7 +21,7 @@ export function Footer() {
       <div className="container">
         <div className="site-footer__grid">
           <div className="site-footer__brand">
-            <Link to="/" aria-label={t('a11y.home')}>
+            <Link to="/">
               <Logo />
             </Link>
             <p>{t('footer.tagline')}</p>

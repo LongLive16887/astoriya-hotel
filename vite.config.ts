@@ -4,12 +4,15 @@ import react from '@vitejs/plugin-react'
 
 /**
  * Replaces %SITE_URL% in index.html with VITE_SITE_URL (e.g. https://astoria.uz), so that
- * link previews in Telegram, Facebook etc. get absolute URLs. Without it the paths stay relative.
+ * link previews in Telegram, Facebook etc. get absolute URLs. Without it the paths stay relative
+ * and the tags that must be absolute (canonical, og:url) are left out.
  */
 function siteUrl(url: string): Plugin {
+  const base = url.replace(/\/+$/, '')
   return {
     name: 'astoria-site-url',
-    transformIndexHtml: (html) => html.replaceAll('%SITE_URL%', url.replace(/\/+$/, '')),
+    transformIndexHtml: (html) =>
+      (base ? html : html.replace(/^.*(rel="canonical"|property="og:url").*\n/gm, '')).replaceAll('%SITE_URL%', base),
   }
 }
 

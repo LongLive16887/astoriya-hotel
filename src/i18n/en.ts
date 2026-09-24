@@ -16,7 +16,6 @@ const en: Dict = {
     language: 'Site language',
     mainNav: 'Main menu',
     photo: 'Photo {{n}} of {{total}}',
-    home: 'Astoria — home',
     openPhoto: 'Open photo: {{caption}}',
   },
   nav: {

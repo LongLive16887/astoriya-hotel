@@ -51,7 +51,7 @@ export function Header({ overlay }: { overlay: boolean }) {
   return (
     <header className={`site-header ${solid ? 'is-solid' : ''} ${light ? 'is-light' : ''} ${menuOpen ? 'is-open' : ''}`}>
       <div className="container site-header__bar">
-        <Link to="/" className="site-header__logo" aria-label={t('a11y.home')}>
+        <Link to="/" className="site-header__logo">
           <Logo />
         </Link>
 
