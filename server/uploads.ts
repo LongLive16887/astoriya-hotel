@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { readdir, stat, writeFile } from 'node:fs/promises'
+import { chmod, readdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 /** Limit per photo; the admin panel shrinks photos to WebP well below it. */
@@ -28,7 +28,10 @@ export async function saveUpload(dir: string, contentType: string, bytes: Uint8A
   if (bytes.length === 0 || bytes.length > MAX_UPLOAD_SIZE) throw new UploadRejected('bad_size')
   if (!format.matches(bytes)) throw new UploadRejected('not_an_image')
   const name = `${new Date(now).toISOString().slice(0, 10)}-${randomBytes(6).toString('hex')}.${format.extension}`
-  await writeFile(path.join(dir, name), bytes, { flag: 'wx' })
+  const file = path.join(dir, name)
+  await writeFile(file, bytes, { flag: 'wx' })
+  // Photos are public: the web server reads them directly, whatever the service's umask.
+  await chmod(file, 0o644)
   return name
 }
 

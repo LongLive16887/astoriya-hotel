@@ -45,13 +45,15 @@ fi
 
 step "Installing system packages"
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-apt-get install -y -qq ca-certificates curl gnupg tar sqlite3 openssl >/dev/null
+# Wait for automatic updates that may be holding the package lock right after boot.
+apt_get() { apt-get -o DPkg::Lock::Timeout=600 "$@"; }
+apt_get update -qq
+apt_get install -y -qq ca-certificates curl gnupg tar sqlite3 openssl >/dev/null
 
 if ! command -v node >/dev/null || [ "$(node -p 'process.versions.node.split(".")[0]')" -lt "$NODE_MAJOR" ]; then
   step "Installing Node.js $NODE_MAJOR"
   curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash - >/dev/null
-  apt-get install -y -qq nodejs >/dev/null
+  apt_get install -y -qq nodejs >/dev/null
 fi
 echo "Node.js $(node --version)"
 
@@ -59,18 +61,19 @@ if ! command -v caddy >/dev/null; then
   step "Installing Caddy"
   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor --yes -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > /etc/apt/sources.list.d/caddy-stable.list
-  apt-get update -qq
-  apt-get install -y -qq caddy >/dev/null
+  apt_get update -qq
+  apt_get install -y -qq caddy >/dev/null
 fi
 echo "$(caddy version)"
 
 step "Creating the service user and folders"
 id astoria >/dev/null 2>&1 || useradd --system --home-dir /var/lib/astoria --shell /usr/sbin/nologin astoria
 install -d -m 755 /opt/astoria /opt/astoria/releases /opt/astoria/bin /etc/astoria
-install -d -m 750 -o astoria -g astoria /var/lib/astoria /var/lib/astoria/uploads /var/lib/astoria/backups
+# The data folder can be crossed but not listed by others; Caddy serves uploads/ straight from disk.
+install -d -m 711 -o astoria -g astoria /var/lib/astoria
+install -d -m 755 -o astoria -g astoria /var/lib/astoria/uploads
+install -d -m 750 -o astoria -g astoria /var/lib/astoria/backups
 install -d -m 700 /var/lib/astoria-deploy
-# Caddy serves uploaded photos straight from disk.
-chmod 755 /var/lib/astoria /var/lib/astoria/uploads
 
 if [ ! -f /etc/astoria/astoria.env ]; then
   cat > /etc/astoria/astoria.env <<ENV

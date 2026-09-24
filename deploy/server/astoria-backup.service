@@ -6,4 +6,5 @@ Type=oneshot
 User=astoria
 Group=astoria
 EnvironmentFile=/etc/astoria/astoria.env
+UMask=0027
 ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning /opt/astoria/current/server/index.mjs backup 14

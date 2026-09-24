@@ -11,6 +11,8 @@ WorkingDirectory=/opt/astoria/current
 ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning /opt/astoria/current/server/index.mjs
 Restart=always
 RestartSec=3
+# The database and backups are readable by the service user only.
+UMask=0027
 
 # The service only needs to write its data folder.
 NoNewPrivileges=true

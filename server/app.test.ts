@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readdirSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -234,6 +234,7 @@ describe('admin API', () => {
     const { url } = await ok.json()
     expect(url).toMatch(/^\/uploads\/\d{4}-\d{2}-\d{2}-[0-9a-f]{12}\.webp$/)
     expect(readdirSync(path.join(dataDir, 'uploads'))).toEqual([url.slice('/uploads/'.length)])
+    expect(statSync(path.join(dataDir, url)).mode & 0o777).toBe(0o644)
     expect((await upload('image/svg+xml', Buffer.from('<svg onload="alert(1)"/>'))).status).toBe(415)
     expect((await upload('image/png', webp)).status).toBe(415)
     const big = await upload('image/webp', new Uint8Array(10 * 1024 * 1024 + 1))
