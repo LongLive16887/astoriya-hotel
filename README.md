@@ -60,6 +60,7 @@ npm run dev        # http://localhost:3000
    firebase use --add            # выберите свой проект
    firebase deploy --only firestore
    ```
+   Без командной строки: Firestore Database → вкладка **Rules** → вставьте содержимое файла `firestore.rules` → Publish. Индекс для новостей необязателен: без него сайт отсортирует новости сам, а ссылку на создание индекса Firebase покажет в консоли браузера.
 5. **Администратор.** Authentication → Users → «Add user» (email и пароль). Скопируйте его **User UID**. Firestore Database → «Start collection» `admins` → Document ID = этот UID → поле `email` (string) с адресом. Подсказка: если войти в `/admin` аккаунтом без прав, панель покажет UID и кнопку «Скопировать».
 6. **Первый вход.** Откройте `/admin`, войдите и нажмите на главной панели «Сохранить контент» — тексты и фото по умолчанию запишутся в базу, и их можно будет редактировать.
 7. **Загрузка фото** (один из вариантов):
@@ -88,7 +89,7 @@ npm run build      # готовый сайт в папке dist/
 ```
 
 - **Firebase Hosting:** `firebase deploy --only hosting` (настройки уже в `firebase.json`).
-- **Vercel / Netlify:** команда сборки `npm run build`, папка `dist`, переменные окружения из `.env`. Переадресация для страниц уже настроена (`vercel.json`, `public/_redirects`).
+- **Netlify / Vercel:** команда сборки `npm run build`, папка `dist`. Переменные из `.env` задаются в настройках сайта (Netlify: Site configuration → Environment variables), после изменения нужна пересборка. Переадресация для страниц уже настроена (`public/_redirects`, `vercel.json`).
 - **Любой другой хостинг:** сервер должен отдавать `index.html` для всех адресов, которых нет в `dist` (это одностраничное приложение).
 
 После публикации укажите `VITE_SITE_URL` — тогда превью ссылок в Telegram и соцсетях будут с картинкой.
