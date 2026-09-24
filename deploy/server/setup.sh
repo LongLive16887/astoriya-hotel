@@ -55,6 +55,9 @@ echo "Web server: $WEB"
 
 step "Installing system packages"
 export DEBIAN_FRONTEND=noninteractive
+# needrestart only lists services that use updated libraries: a package installed for the site must
+# not restart other projects' services (it would otherwise restart them on its own).
+export NEEDRESTART_MODE=l
 # Wait for automatic updates that may be holding the package lock right after boot.
 apt_get() { apt-get -o DPkg::Lock::Timeout=600 "$@"; }
 missing=""
