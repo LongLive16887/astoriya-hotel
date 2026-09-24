@@ -8,7 +8,8 @@
 #   REPORT: <gzip + AES-256-CBC, base64, in lines>
 set -uo pipefail
 
-PUBLIC_KEY="${1:?usage: inspect.sh bootstrap.pub}"
+PUBLIC_KEY="${1:?usage: inspect.sh bootstrap.pub [domain]}"
+DOMAIN="${2:-}"
 
 section() { printf '\n== %s\n' "$*"; }
 
@@ -58,6 +59,20 @@ report() {
       grep -Ehv '^\s*(#|$)' "$file" | grep -E 'server_name|listen|root |proxy_pass|default_server|ssl_certificate |return 30' | sed 's/^\s*/  /'
     done
     nginx -t 2>&1 | tail -2
+    # Every file nginx loads, in order: a server block elsewhere (nginx.conf, other includes) or one
+    # that listens on a specific address can take requests meant for a site.
+    echo "--- nginx -T"
+    nginx -T 2>/dev/null | grep -E '^# configuration file |^[[:space:]]*(listen|server_name|include|return) ' | sed 's/^[[:space:]]*/  /'
+  fi
+
+  section network
+  ip -4 -o addr show scope global 2>/dev/null | awk '{print $2, $4}'
+  if [ -n "$DOMAIN" ]; then
+    # How this server's nginx answers for the domain, on each of its addresses.
+    for ip in 127.0.0.1 $(ip -4 -o addr show scope global 2>/dev/null | awk '{sub(/\/.*/, "", $4); print $4}'); do
+      echo "http://$DOMAIN via $ip: $(curl -s -o /dev/null -m 5 -w '%{http_code} %{redirect_url}' -H "Host: $DOMAIN" "http://$ip/api/health")"
+    done
+    echo "$DOMAIN resolves here to: $(getent ahostsv4 "$DOMAIN" | awk '{print $1}' | sort -u | paste -sd' ' -)"
   fi
 
   section certificates

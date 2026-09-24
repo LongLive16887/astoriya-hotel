@@ -41,8 +41,9 @@ jobs:
       # The report may describe other projects on the server; it is printed encrypted.
       - name: Look at the server (read-only, encrypted report)
         run: |
+          . deploy/config.env
           dir="$(server-put deploy/server/inspect.sh deploy/server/bootstrap.pub)"
-          server-ssh "bash $dir/inspect.sh $dir/bootstrap.pub; rm -rf $dir"
+          server-ssh "bash $dir/inspect.sh $dir/bootstrap.pub '$DOMAIN'; rm -rf $dir"
 
       - uses: actions/setup-node@v5
         with:
@@ -84,10 +85,17 @@ jobs:
             exit 0
           fi
           for i in $(seq 1 12); do
-            curl -fsS --max-time 20 "https://$DOMAIN/api/health" && echo && exit 0
+            curl -fsS --max-time 20 "https://$DOMAIN/api/health" | grep '"version"' && exit 0
             echo "https://$DOMAIN does not answer yet, retrying…"
             sleep 10
           done
-          curl -fsS --max-time 20 "http://$DOMAIN/api/health" && echo "::warning::$DOMAIN answers over HTTP only: the certificate is not issued yet (check the DNS A records, then run this workflow again)." && exit 0
-          echo "::error::$DOMAIN does not answer. Check that its DNS A records point to the server."
+          # Only the site's own reply counts: another server block may answer for the domain.
+          echo "What answers for $DOMAIN from outside:"
+          curl -sSI --max-time 20 "http://$DOMAIN/api/health" | grep -iE '^(HTTP|location|server):' | sed 's/^/  http:  /'
+          curl -svk -o /dev/null --max-time 20 "https://$DOMAIN/" 2>&1 | grep -E 'subject:|subjectAltName' | sed 's/^/  https: /'
+          if curl -fsS --max-time 20 "http://$DOMAIN/api/health" | grep -q '"version"'; then
+            echo "::warning::$DOMAIN answers over HTTP only: the certificate is not issued yet (run this workflow again later)."
+            exit 0
+          fi
+          echo "::error::$DOMAIN points to the server, but the site does not answer for it (see above)."
           exit 1

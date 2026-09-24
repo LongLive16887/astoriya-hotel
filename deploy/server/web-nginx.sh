@@ -101,7 +101,8 @@ else
     write_conf https
     echo "HTTPS certificate for $names is in place (renewed automatically by certbot)"
   else
-    tail -5 /tmp/astoria-certbot.log
+    # The Certificate Authority's own words: which address it reached and what it got there.
+    grep -E 'reported these problems|Domain:|Type:|Detail:' /tmp/astoria-certbot.log || tail -5 /tmp/astoria-certbot.log
     echo "::warning::No HTTPS certificate yet: check that the DNS A records of $names point to this server. The site answers over HTTP until then; run the setup again afterwards."
   fi
 fi
