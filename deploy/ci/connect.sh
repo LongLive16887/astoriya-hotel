@@ -81,7 +81,7 @@ if [ -n "${VPS_SSH_KEY:-}" ]; then
 fi
 
 if [ -z "$ssh_cmd" ] && [ -n "${SERVER_SSH_PASSWORD:-}" ]; then
-  command -v sshpass >/dev/null || sudo apt-get install -y -qq sshpass >/dev/null
+  command -v sshpass >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq sshpass >/dev/null; }
   if SSHPASS="$SERVER_SSH_PASSWORD" sshpass -e ssh -o PubkeyAuthentication=no $common "root@$host" "$probe"; then
     user=root
     # sshpass reads the password from $SSHPASS, set from the secret when the command runs.

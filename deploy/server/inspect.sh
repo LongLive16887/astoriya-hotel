@@ -25,6 +25,15 @@ report() {
   id
   awk -F: '$3 == 0 || ($3 >= 1000 && $3 < 65000) {print $1, $6, $7}' /etc/passwd
   grep -Ehs '^(PermitRootLogin|PasswordAuthentication)' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf
+  # What sshd actually applies to root, and the keys it would accept: explains a refused deploy key.
+  sshd -T -C user=root,host=github.com,addr=192.0.2.1 2>&1 |
+    grep -Ei '^(permitrootlogin|pubkeyauthentication|passwordauthentication|authorizedkeysfile|allowusers|allowgroups|denyusers|authenticationmethods|strictmodes) '
+  stat -c '%a %U %n' / /root /root/.ssh 2>/dev/null
+  for file in /root/.ssh/authorized_keys /root/.ssh/authorized_keys2 /home/*/.ssh/authorized_keys; do
+    [ -f "$file" ] || continue
+    echo "--- $file: $(stat -c '%a %U' "$file"), $(wc -l < "$file") lines, ends with a line break: $([ -z "$(tail -c1 "$file")" ] && echo yes || echo no)"
+    ssh-keygen -lf "$file" 2>&1
+  done
 
   section "listening ports"
   ss -ltnp
