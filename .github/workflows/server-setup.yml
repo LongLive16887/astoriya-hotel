@@ -84,8 +84,17 @@ jobs:
             echo "::warning::$DOMAIN does not point to the server yet (DNS gives: $(echo $domain_ips)). The site is set up for it; once DNS points here, run this workflow again for the HTTPS certificate."
             exit 0
           fi
+          # The page, its script and the API, as a visitor's browser loads them.
+          site_answers() {
+            curl -fsS --max-time 20 "https://$DOMAIN/api/health" | grep '"version"' || return 1
+            page="$(curl -fsS --max-time 20 "https://$DOMAIN/")" || return 1
+            script="$(printf '%s' "$page" | grep -o '/assets/index-[^"]*\.js' | head -1)"
+            [ -n "$script" ] && curl -fsS --max-time 20 -o /dev/null "https://$DOMAIN$script" || return 1
+            curl -fsS --max-time 20 -o /dev/null "https://www.$DOMAIN/" || [ "$WWW" != 1 ] || return 1
+            echo "https://$DOMAIN: page, $script and API answer"
+          }
           for i in $(seq 1 12); do
-            curl -fsS --max-time 20 "https://$DOMAIN/api/health" | grep '"version"' && exit 0
+            site_answers && exit 0
             echo "https://$DOMAIN does not answer yet, retrying…"
             sleep 10
           done
