@@ -19,6 +19,54 @@ else
   conf=/etc/nginx/conf.d/astoria.conf
   enabled=""
 fi
+main_conf=/etc/nginx/nginx.conf
+
+# True when nginx's configuration includes this path through one of its include globs.
+included() {
+  local pattern
+  while read -r pattern; do
+    case "$pattern" in /*) ;; *) pattern="/etc/nginx/$pattern" ;; esac
+    # shellcheck disable=SC2053 # the include pattern is a glob
+    [[ $1 == $pattern ]] && return 0
+  done < <(nginx -T 2>/dev/null | sed -n 's/^[[:space:]]*include[[:space:]]\{1,\}\([^;]*\);.*/\1/p')
+  return 1
+}
+# Some servers keep every site in nginx.conf and do not read sites-enabled/ (or conf.d/). Then
+# nginx.conf gets one include line for the site, at the end of its http block: the sites before it
+# stay the default ones for requests to unknown names.
+link=""
+if [ -n "$enabled" ] && included "$enabled"; then link="$enabled"
+elif [ -z "$enabled" ] && included "$conf"; then link="$conf"
+fi
+add_include() {
+  [ -z "$link" ] || return 0
+  grep -qF "include $conf;" "$main_conf" && return 0
+  cp "$main_conf" "$main_conf.astoria-backup"
+  awk -v line="    include $conf; # Astoria hotel site (deploy/server/web-nginx.sh)" '
+    # Code of a line without its comment; braces inside quotes do not count.
+    function code(s,   out, i, c, q) {
+      out = ""; q = ""
+      for (i = 1; i <= length(s); i++) {
+        c = substr(s, i, 1)
+        if (q != "") { if (c == q) q = ""; continue }
+        if (c == "\"" || c == "\047") { q = c; continue }
+        if (c == "#") break
+        out = out c
+      }
+      return out
+    }
+    {
+      c = code($0); opens = gsub(/[{]/, "", c); closes = gsub(/[}]/, "", c)
+      if (!in_http && !done && depth == 0 && code($0) ~ /(^|[[:space:];])http[[:space:]]*[{]/) in_http = 1
+      after = depth + opens - closes
+      if (in_http && !done && after == 0) { print line; done = 1; in_http = 0 }
+      print; depth = after
+    }
+    END { exit done ? 0 : 1 }' "$main_conf" > "$main_conf.astoria-new" ||
+    { rm -f "$main_conf.astoria-new"; fail "could not find the http block in $main_conf; add 'include $conf;' at its end by hand"; }
+  mv "$main_conf.astoria-new" "$main_conf"
+  echo "nginx reads its sites from $main_conf only: added 'include $conf;' at the end of its http block"
+}
 if [ -z "$DOMAIN" ]; then
   echo "nginx already serves other sites here, so the site is published only under its own domain:"
   echo "set DOMAIN in deploy/config.env. The site itself is installed and running on 127.0.0.1:$port."
@@ -28,8 +76,9 @@ else
   install -d /var/www/letsencrypt
   names="$DOMAIN"
   [ "$WWW" = "1" ] && names="$DOMAIN www.$DOMAIN"
+  # Listen on IPv6 only where nginx already does, like the other sites.
   ipv6=0
-  [ -s /proc/net/if_inet6 ] && ipv6=1
+  ss -ltnH 'sport = :80' 2>/dev/null | grep -q '\[::\]:80' && ipv6=1
   # http2 moved from "listen … http2" to its own directive in nginx 1.25.1.
   nginx_version="$(nginx -v 2>&1 | sed -E 's#.*/([0-9.]+).*#\1#')"
   if [ "$(printf '%s\n1.25.1\n' "$nginx_version" | sort -V | head -1)" = 1.25.1 ]; then http2="new"; else http2="old"; fi
@@ -79,12 +128,18 @@ else
     } > "$conf.new"
     [ -f "$conf" ] && cp "$conf" "$conf.previous"
     mv "$conf.new" "$conf"
-    [ -n "$enabled" ] && ln -sfn "$conf" "$enabled"
+    if [ -n "$link" ] && [ "$link" = "$enabled" ]; then ln -sfn "$conf" "$enabled"
+    else [ -n "$enabled" ] && rm -f "$enabled"  # not read by this nginx
+    fi
+    rm -f "$main_conf.astoria-backup"
+    add_include
     if ! nginx -t 2>/tmp/astoria-nginx-test; then
       cat /tmp/astoria-nginx-test
+      [ -f "$main_conf.astoria-backup" ] && mv "$main_conf.astoria-backup" "$main_conf"
       if [ -f "$conf.previous" ]; then mv "$conf.previous" "$conf"; else rm -f "$conf" "$enabled"; fi
       fail "the new nginx config did not pass nginx -t; the previous one is back"
     fi
+    rm -f "$main_conf.astoria-backup"
     systemctl reload nginx
   }
 

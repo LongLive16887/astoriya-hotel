@@ -94,7 +94,7 @@ Workflow **Server setup** запускается при изменении `depl
 | сборки сайта | `/opt/astoria/releases/<коммит>`, текущая — `/opt/astoria/current` |
 | Node.js сайта | `/opt/astoria/node` |
 | настройки сервера | `/etc/astoria/astoria.env` |
-| веб-сервер | `/etc/nginx/sites-available/astoria.conf` или `/etc/caddy/Caddyfile` |
+| веб-сервер | `/etc/nginx/sites-available/astoria.conf` (если nginx не читает `sites-enabled/`, в конец `http` в `nginx.conf` добавляется строка `include` для этого файла) или `/etc/caddy/Caddyfile` |
 
 Полезные команды (от root):
 
