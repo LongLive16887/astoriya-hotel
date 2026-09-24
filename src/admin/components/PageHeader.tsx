@@ -39,12 +39,3 @@ export function Spinner({ label = 'Загрузка…' }: { label?: string }) {
     </div>
   )
 }
-
-/** Notice for sections that still show the built-in content. */
-export function DefaultsNotice({ what }: { what: string }) {
-  return (
-    <p className="a-alert a-alert--info">
-      Сейчас на сайте {what} по умолчанию. Они сохранятся в базе при первом изменении.
-    </p>
-  )
-}

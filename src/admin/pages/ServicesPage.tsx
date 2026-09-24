@@ -7,7 +7,7 @@ import { SERVICE_ICONS, type Service, type ServiceIcon } from '../../content/typ
 import { uniqueId } from '../../lib/ids'
 import { errorMessage, useConfirm, useToast } from '../components/feedback'
 import { LocalizedField } from '../components/LocalizedField'
-import { DefaultsNotice, EmptyState, PageHeader, Spinner } from '../components/PageHeader'
+import { EmptyState, PageHeader, Spinner } from '../components/PageHeader'
 import { Switch } from '../components/Switch'
 import { moveItem, mutateList, removeItem, upsertItem, useContentDoc } from '../lib/content'
 
@@ -40,7 +40,7 @@ const ICON_LABELS: Record<ServiceIcon, string> = {
 }
 
 export function ServicesPage() {
-  const { data: services, exists, loading } = useContentDoc('services')
+  const { data: services, loading } = useContentDoc('services')
   const toast = useToast()
   const confirm = useConfirm()
   const [editing, setEditing] = useState<Service | null>(null)
@@ -74,7 +74,6 @@ export function ServicesPage() {
           </button>
         }
       />
-      {!loading && !exists && <DefaultsNotice what="показаны услуги" />}
 
       {loading ? (
         <Spinner />

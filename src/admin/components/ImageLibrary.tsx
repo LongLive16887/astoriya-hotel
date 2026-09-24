@@ -3,6 +3,7 @@ import { Check, ImagePlus, Link2, Upload, X } from 'lucide-react'
 import { Dialog } from '../../components/Dialog'
 import { BUILTIN_IMAGES } from '../../content/builtinImages'
 import { useContentDoc } from '../lib/content'
+import { useLiveQuery } from '../lib/live'
 import { uploadImage } from '../lib/upload'
 import { errorMessage, useToast } from './feedback'
 
@@ -22,20 +23,24 @@ export function ImageLibrary({ open, onClose, onSelect, multiple = false }: Imag
   )
 }
 
+const parseUploads = (json: unknown) => (json as { uploads: { url: string }[] }).uploads.map((u) => u.url)
+
 function LibraryBody({ onClose, onSelect, multiple }: Omit<ImageLibraryProps, 'open'>) {
   const toast = useToast()
   const gallery = useContentDoc('gallery')
   const rooms = useContentDoc('rooms')
   const settings = useContentDoc('settings')
+  const uploads = useLiveQuery('/api/admin/uploads', '', parseUploads)
   const [selected, setSelected] = useState<string[]>([])
   const [url, setUrl] = useState('')
   const [progress, setProgress] = useState<number | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
 
-  // Everything already used on the site, newest uploads first, without duplicates.
+  // Uploaded photos (newest first) and everything used on the site, without duplicates.
   const images = useMemo(() => {
     const s = settings.data
     const all = [
+      ...(uploads.data ?? []),
       ...gallery.data.map((g) => g.src),
       ...rooms.data.flatMap((r) => r.images),
       s.hero.image,
@@ -46,7 +51,7 @@ function LibraryBody({ onClose, onSelect, multiple }: Omit<ImageLibraryProps, 'o
       ...BUILTIN_IMAGES,
     ]
     return [...new Set(all.filter(Boolean))]
-  }, [gallery.data, rooms.data, settings.data])
+  }, [uploads.data, gallery.data, rooms.data, settings.data])
 
   const toggle = (src: string) => {
     if (!multiple) {
@@ -130,7 +135,7 @@ function LibraryBody({ onClose, onSelect, multiple }: Omit<ImageLibraryProps, 'o
         </div>
       </div>
 
-      <p className="a-hint">Фото с сайта — нажмите, чтобы {multiple ? 'отметить' : 'выбрать'}:</p>
+      <p className="a-hint">Загруженные фото и фото с сайта — нажмите, чтобы {multiple ? 'отметить' : 'выбрать'}:</p>
       <ul className="a-library__grid">
         {images.map((src) => {
           const isSelected = selected.includes(src)

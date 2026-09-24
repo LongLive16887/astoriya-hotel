@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { signOut } from 'firebase/auth'
 import {
   BedDouble,
   ExternalLink,
@@ -13,13 +12,13 @@ import {
   Newspaper,
   Settings,
   Sparkles,
+  UserCog,
   X,
 } from 'lucide-react'
 import { LogoMark } from '../../components/Logo'
-import { useAdminUser } from '../auth/context'
+import { useAdminUser, useAuthActions } from '../auth/context'
 import { useToast } from '../components/feedback'
 import { useNewBookings, type Booking } from '../lib/bookings'
-import { getAdminAuth } from '../lib/firebase'
 import { notify } from '../lib/notifications'
 import { NewBookingsContext } from './newBookings'
 
@@ -32,10 +31,12 @@ const NAV = [
   { to: '/admin/reviews', label: 'Отзывы', icon: MessageSquareQuote },
   { to: '/admin/news', label: 'Новости', icon: Newspaper },
   { to: '/admin/settings', label: 'Настройки сайта', icon: Settings },
+  { to: '/admin/admins', label: 'Администраторы', icon: UserCog },
 ]
 
 export function AdminLayout() {
   const user = useAdminUser()
+  const { signOut } = useAuthActions()
   const toast = useToast()
   const location = useLocation()
   const [menuKey, setMenuKey] = useState<string | null>(null)
@@ -102,8 +103,8 @@ export function AdminLayout() {
               <span>Открыть сайт</span>
             </a>
             <div className="a-sidebar__user">
-              <span title={user.email ?? ''}>{user.email}</span>
-              <button type="button" className="a-icon-btn a-icon-btn--dark" onClick={() => signOut(getAdminAuth())} aria-label="Выйти" title="Выйти">
+              <span title={user.email}>{user.email}</span>
+              <button type="button" className="a-icon-btn a-icon-btn--dark" onClick={() => void signOut()} aria-label="Выйти" title="Выйти">
                 <LogOut size={18} />
               </button>
             </div>

@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up the Astoria database
+
+[Service]
+Type=oneshot
+User=astoria
+Group=astoria
+EnvironmentFile=/etc/astoria/astoria.env
+ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning /opt/astoria/current/server/index.mjs backup 14

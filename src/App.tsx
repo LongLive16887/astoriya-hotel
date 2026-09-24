@@ -10,7 +10,7 @@ import { NotFoundPage } from './site/pages/NotFoundPage'
 import { PostPage } from './site/pages/PostPage'
 import { RoomPage } from './site/pages/RoomPage'
 
-// The admin panel (and the Firebase SDKs it needs) is downloaded only when someone opens /admin.
+// The admin panel is downloaded only when someone opens /admin.
 const AdminApp = lazy(() => import('./admin/AdminApp'))
 
 const router = createBrowserRouter([

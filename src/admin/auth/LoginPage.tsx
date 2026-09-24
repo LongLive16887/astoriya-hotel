@@ -1,57 +1,35 @@
 import { useState, type FormEvent } from 'react'
-import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth'
 import { ArrowLeft } from 'lucide-react'
 import { LogoMark } from '../../components/Logo'
-import { errorCode } from '../../lib/firebaseConfig'
-import { getAdminAuth } from '../lib/firebase'
+import { ApiError } from '../../lib/api'
+import { login } from '../lib/account'
+import { useAuthActions } from './context'
 
-const AUTH_ERRORS: Record<string, string> = {
-  'auth/invalid-credential': 'Неверный email или пароль.',
-  'auth/invalid-email': 'Проверьте адрес электронной почты.',
-  'auth/user-disabled': 'Этот аккаунт отключён.',
-  'auth/user-not-found': 'Пользователь с таким email не найден.',
-  'auth/wrong-password': 'Неверный email или пароль.',
-  'auth/too-many-requests': 'Слишком много попыток. Подождите несколько минут и попробуйте снова.',
-  'auth/network-request-failed': 'Нет соединения с сервером. Проверьте интернет.',
-  'auth/missing-email': 'Введите email, чтобы получить письмо для сброса пароля.',
+function messageFor(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.status === 401) return 'Неверный email или пароль.'
+    if (error.status === 429) return 'Слишком много попыток. Подождите несколько минут и попробуйте снова.'
+    if (error.status === 0) return 'Нет соединения с сервером. Проверьте интернет.'
+  }
+  return 'Не удалось войти. Попробуйте ещё раз.'
 }
-
-const messageFor = (error: unknown) =>
-  AUTH_ERRORS[errorCode(error)] ?? 'Не удалось войти. Попробуйте ещё раз.'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const { signedIn } = useAuthActions()
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault()
     setBusy(true)
     setError('')
-    setNotice('')
     try {
-      await signInWithEmailAndPassword(getAdminAuth(), email.trim(), password)
+      signedIn(await login(email.trim(), password))
     } catch (e) {
       setError(messageFor(e))
-    } finally {
       setBusy(false)
-    }
-  }
-
-  const onReset = async () => {
-    setError('')
-    setNotice('')
-    if (!email.trim()) {
-      setError(AUTH_ERRORS['auth/missing-email'])
-      return
-    }
-    try {
-      await sendPasswordResetEmail(getAdminAuth(), email.trim())
-      setNotice(`Если аккаунт ${email.trim()} существует, на него придёт письмо со ссылкой для смены пароля.`)
-    } catch (e) {
-      setError(messageFor(e))
     }
   }
 
@@ -94,17 +72,12 @@ export function LoginPage() {
             {error}
           </p>
         )}
-        {notice && (
-          <p className="a-alert a-alert--success" role="status">
-            {notice}
-          </p>
-        )}
         <button type="submit" className="a-btn a-btn--primary a-btn--block" disabled={busy}>
           {busy ? 'Входим…' : 'Войти'}
         </button>
-        <button type="button" className="a-link" onClick={onReset}>
-          Забыли пароль?
-        </button>
+        <p className="a-hint">
+          Забыли пароль? Другой администратор может задать новый в разделе «Администраторы».
+        </p>
       </form>
       <a className="a-auth__back" href="/">
         <ArrowLeft size={16} /> На сайт

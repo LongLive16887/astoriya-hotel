@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { readCache, writeCache } from '../lib/cache'
-import { isFirebaseConfigured, loadPublicDb } from '../lib/firebaseConfig'
-import { DEFAULT_POSTS } from './defaults'
+import { fetchPublishedPosts } from '../lib/publicApi'
 import { normalizePost } from './normalize'
 import type { Post } from './types'
 
@@ -14,12 +13,10 @@ export const POSTS_PAGE_SIZE = 24
 let request: Promise<Post[]> | null = null
 
 function loadPosts(): Promise<Post[]> {
-  request ??= loadPublicDb()
-    .then((db) => db.fetchPublishedPosts(POSTS_PAGE_SIZE))
-    .then((posts) => {
-      writeCache(CACHE_KEY, posts)
-      return posts
-    })
+  request ??= fetchPublishedPosts(POSTS_PAGE_SIZE).then((posts) => {
+    writeCache(CACHE_KEY, posts)
+    return posts
+  })
   return request
 }
 
@@ -31,12 +28,9 @@ function cachedPosts(): Post[] | null {
 
 /** Published news, newest first. `null` while the first request is in flight. */
 export function usePosts(): Post[] | null {
-  const [posts, setPosts] = useState<Post[] | null>(() =>
-    isFirebaseConfigured ? cachedPosts() : DEFAULT_POSTS,
-  )
+  const [posts, setPosts] = useState<Post[] | null>(cachedPosts)
 
   useEffect(() => {
-    if (!isFirebaseConfigured) return
     let active = true
     loadPosts()
       .then((fresh) => {
@@ -64,14 +58,14 @@ export function usePostPages() {
 
   // The first page may be refreshed after older pages were loaded; do not show a post twice.
   const posts = first && [...first, ...older.filter((p) => !first.some((f) => f.id === p.id))]
-  const hasMore = isFirebaseConfigured && !done && posts !== null && posts.length >= POSTS_PAGE_SIZE
+  const hasMore = !done && posts !== null && posts.length >= POSTS_PAGE_SIZE
 
   const loadMore = async () => {
     const last = posts?.at(-1)
     if (!last || loading) return
     setLoading(true)
     try {
-      const page = await (await loadPublicDb()).fetchPublishedPosts(POSTS_PAGE_SIZE, last)
+      const page = await fetchPublishedPosts(POSTS_PAGE_SIZE, last)
       setOlder((current) => [...current, ...page])
       if (page.length < POSTS_PAGE_SIZE) setDone(true)
     } catch (error) {

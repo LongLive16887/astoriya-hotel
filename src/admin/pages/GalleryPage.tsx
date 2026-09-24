@@ -8,14 +8,14 @@ import ru from '../../i18n/ru'
 import { errorMessage, useConfirm, useToast } from '../components/feedback'
 import { ImageLibrary } from '../components/ImageLibrary'
 import { LocalizedField } from '../components/LocalizedField'
-import { DefaultsNotice, EmptyState, PageHeader, Spinner } from '../components/PageHeader'
+import { EmptyState, PageHeader, Spinner } from '../components/PageHeader'
 import { moveItem, mutateList, removeItem, upsertItem, useContentDoc } from '../lib/content'
 import { uploadImage } from '../lib/upload'
 
 const CATEGORY_LABELS = ru.gallery.categories
 
 export function GalleryPage() {
-  const { data: gallery, exists, loading } = useContentDoc('gallery')
+  const { data: gallery, loading } = useContentDoc('gallery')
   const toast = useToast()
   const confirm = useConfirm()
   const [filter, setFilter] = useState<GalleryCategory | 'all'>('all')
@@ -88,7 +88,6 @@ export function GalleryPage() {
           </>
         }
       />
-      {!loading && !exists && <DefaultsNotice what="показаны фото" />}
 
       <div className="a-tabs" role="tablist" aria-label="Категория">
         {(['all', ...GALLERY_CATEGORIES] as const).map((c) => (

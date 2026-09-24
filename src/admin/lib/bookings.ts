@@ -1,21 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import {
-  collection,
-  deleteDoc,
-  doc,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-  Timestamp,
-  updateDoc,
-  where,
-  type Query,
-} from 'firebase/firestore'
+import { useEffect, useRef } from 'react'
 import { isLang } from '../../content/localized'
 import { BOOKING_STATUSES, type BookingRequest, type BookingStatus } from '../../content/types'
-import { currentEditor, getDb } from './firebase'
+import { api } from '../../lib/api'
+import { subscribe, useLiveQuery } from './live'
 
 export const STATUS_LABELS: Record<BookingStatus, string> = {
   new: 'Новая',
@@ -34,13 +21,14 @@ export interface Booking extends BookingRequest {
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '')
 const int = (v: unknown, fallback: number) => (typeof v === 'number' && Number.isFinite(v) ? v : fallback)
-const date = (v: unknown) => (v instanceof Timestamp ? v.toDate() : null)
+const date = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? new Date(v) : null)
 
-export function toBooking(id: string, data: Record<string, unknown>): Booking {
-  const status = BOOKING_STATUSES.find((s) => s === data.status) ?? 'new'
+/** A request as the API returns it (times in milliseconds). */
+export function toBooking(raw: unknown): Booking {
+  const data = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<string, unknown>
   return {
-    id,
-    status,
+    id: str(data.id),
+    status: BOOKING_STATUSES.find((s) => s === data.status) ?? 'new',
     name: str(data.name),
     phone: str(data.phone),
     email: str(data.email),
@@ -64,103 +52,49 @@ interface BookingsState {
   error: string | null
 }
 
-const bookingsRef = () => collection(getDb(), 'bookings')
+const parseList = (json: unknown) => ((json as { bookings?: unknown[] }).bookings ?? []).map(toBooking)
 
-function useBookingsQuery(bookingsQuery: Query): BookingsState {
-  const [state, setState] = useState<BookingsState>({ bookings: [], loading: true, error: null })
-
-  useEffect(
-    () =>
-      onSnapshot(
-        bookingsQuery,
-        (snapshot) =>
-          setState({
-            bookings: snapshot.docs.map((d) => toBooking(d.id, d.data())),
-            loading: false,
-            error: null,
-          }),
-        (error) => setState((s) => ({ ...s, loading: false, error: error.message })),
-      ),
-    [bookingsQuery],
-  )
-
-  return state
+function useBookingList(query: string): BookingsState {
+  const { data, loading, error } = useLiveQuery(`/api/admin/bookings?${query}`, 'bookings', parseList)
+  return { bookings: data ?? [], loading, error }
 }
 
 /** The latest `max` booking requests, updated live. */
-export function useBookings(max: number): BookingsState {
-  return useBookingsQuery(useMemo(() => query(bookingsRef(), orderBy('createdAt', 'desc'), limit(max)), [max]))
-}
+export const useBookings = (max: number) => useBookingList(`limit=${max}`)
 
 /** Requests received since `since` (a timestamp in ms), updated live. */
-export function useBookingsSince(since: number): BookingsState {
-  return useBookingsQuery(useMemo(() => query(bookingsRef(), where('createdAt', '>=', Timestamp.fromMillis(since))), [since]))
-}
+export const useBookingsSince = (since: number) => useBookingList(`since=${since}&limit=1000`)
 
 /** Requests with check-in between two ISO dates (inclusive), whatever their status, updated live. */
-export function useArrivals(from: string, to: string): BookingsState {
-  return useBookingsQuery(
-    useMemo(() => query(bookingsRef(), where('checkIn', '>=', from), where('checkIn', '<=', to), orderBy('checkIn')), [from, to]),
-  )
-}
+export const useArrivals = (from: string, to: string) => useBookingList(`checkInFrom=${from}&checkInTo=${to}&limit=500`)
 
 /** One request by id, updated live; null while loading, when missing, or when `id` is null. */
 export function useBooking(id: string | null): Booking | null {
-  const [booking, setBooking] = useState<Booking | null>(null)
-
-  useEffect(() => {
-    if (!id) return
-    return onSnapshot(
-      doc(getDb(), 'bookings', id),
-      (snapshot) => setBooking(snapshot.exists() ? toBooking(snapshot.id, snapshot.data()) : null),
-      () => setBooking(null),
-    )
-  }, [id])
-
-  return booking && booking.id === id ? booking : null
+  const { data } = useLiveQuery(id ? `/api/admin/bookings/${encodeURIComponent(id)}` : null, 'bookings', toBooking)
+  return data ?? null
 }
 
 /** Live list of requests that nobody has handled yet; `onAdded` fires for requests arriving later. */
 export function useNewBookings(onAdded?: (booking: Booking) => void): Booking[] {
-  const [bookings, setBookings] = useState<Booking[]>([])
+  const { bookings } = useBookingList('status=new&limit=500')
   const onAddedRef = useRef(onAdded)
 
   useEffect(() => {
     onAddedRef.current = onAdded
   }, [onAdded])
 
-  useEffect(() => {
-    let initial = true
-    return onSnapshot(
-      query(collection(getDb(), 'bookings'), where('status', '==', 'new')),
-      (snapshot) => {
-        setBookings(snapshot.docs.map((d) => toBooking(d.id, d.data())))
-        if (!initial) {
-          snapshot
-            .docChanges()
-            // Guests cannot set updatedAt, so a request that has it was moved back to "new" by an admin.
-            .filter((change) => change.type === 'added' && !('updatedAt' in change.doc.data()))
-            .forEach((change) => onAddedRef.current?.(toBooking(change.doc.id, change.doc.data())))
-        }
-        initial = false
-      },
-      () => setBookings([]),
-    )
-  }, [])
+  // Only requests sent by guests are announced (not ones an admin moved back to "new").
+  useEffect(() => subscribe('booking-created', (raw) => onAddedRef.current?.(toBooking(raw))), [])
 
   return bookings
 }
 
 export async function updateBooking(id: string, patch: Partial<Pick<Booking, 'status' | 'note'>>) {
-  await updateDoc(doc(getDb(), 'bookings', id), {
-    ...patch,
-    updatedAt: serverTimestamp(),
-    updatedBy: currentEditor(),
-  })
+  await api(`/api/admin/bookings/${encodeURIComponent(id)}`, { method: 'PATCH', json: patch })
 }
 
 export async function deleteBooking(id: string) {
-  await deleteDoc(doc(getDb(), 'bookings', id))
+  await api(`/api/admin/bookings/${encodeURIComponent(id)}`, { method: 'DELETE' })
 }
 
 const CSV_COLUMNS: [string, (b: Booking) => string | number][] = [

@@ -201,9 +201,9 @@ const en: Dict = {
     done: 'Done',
     errorTitle: 'Could not send the request',
     errorText: 'Check your internet connection and try again — or message us on Telegram.',
-    unavailable: 'Online requests are temporarily unavailable. Send us your request on Telegram or give us a call.',
+    tooMany: 'Many requests have already been sent from this device. Message us on Telegram or give us a call and we will answer right away.',
     errorTextCall: 'Check your internet connection and try again — or give us a call.',
-    unavailableCall: 'Online requests are temporarily unavailable. Give us a call and we will help you choose a room.',
+    tooManyCall: 'Many requests have already been sent from this device. Give us a call and we will answer right away.',
     copyAndOpen: 'Send via Telegram',
     copied: 'The request text is copied — paste it into the chat with the hotel.',
     requestText:

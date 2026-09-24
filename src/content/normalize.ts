@@ -16,7 +16,7 @@ import {
   type SiteSettings,
 } from './types'
 
-// Firestore data is edited by people (and can be edited by hand in the console),
+// Stored content is edited by people (and comes from the network on the site),
 // so everything read from it is coerced into the expected shape here.
 
 type Obj = Record<string, unknown>

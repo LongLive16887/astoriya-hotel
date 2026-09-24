@@ -6,19 +6,19 @@ import { safeMapEmbed } from '../../lib/links'
 import { errorMessage, useToast } from '../components/feedback'
 import { ImageField } from '../components/ImageFields'
 import { Field, LocalizedField } from '../components/LocalizedField'
-import { DefaultsNotice, PageHeader, Spinner } from '../components/PageHeader'
+import { PageHeader, Spinner } from '../components/PageHeader'
 import { SaveBar } from '../components/SaveBar'
 import { useUnsavedChanges } from '../components/useUnsavedChanges'
 import { saveSettings, useContentDoc } from '../lib/content'
 import { mergeEdits } from '../lib/merge'
 
 export function SettingsPage() {
-  const { data, exists, loading, error } = useContentDoc('settings')
+  const { data, loading, error } = useContentDoc('settings')
   if (loading) return <Spinner />
-  return <SettingsForm initial={data} exists={exists} error={error} />
+  return <SettingsForm initial={data} error={error} />
 }
 
-function SettingsForm({ initial, exists, error }: { initial: SiteSettings; exists: boolean; error: string | null }) {
+function SettingsForm({ initial, error }: { initial: SiteSettings; error: string | null }) {
   const toast = useToast()
   // The version the form started from (or last saved); unsaved changes are measured against it.
   const [saved, setSaved] = useState(initial)
@@ -75,7 +75,6 @@ function SettingsForm({ initial, exists, error }: { initial: SiteSettings; exist
           </button>
         }
       />
-      {!exists && <DefaultsNotice what="показаны настройки" />}
       {error && <p className="a-alert a-alert--danger">{error}</p>}
 
       <div className="a-form">

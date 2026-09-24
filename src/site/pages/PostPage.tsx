@@ -7,8 +7,8 @@ import { paragraphs, tr } from '../../content/localized'
 import type { Post } from '../../content/types'
 import { usePosts } from '../../content/usePosts'
 import { useLang } from '../../i18n/useLang'
-import { isFirebaseConfigured, loadPublicDb } from '../../lib/firebaseConfig'
 import { formatDate } from '../../lib/format'
+import { fetchPost } from '../../lib/publicApi'
 import { PostCard } from '../sections/PostCard'
 import { useDocumentMeta } from '../useDocumentMeta'
 import { NotFoundView } from './NotFoundView'
@@ -22,10 +22,9 @@ function usePost(id: string): Post | null | undefined {
   const listLoaded = posts !== null
 
   useEffect(() => {
-    if (fromList || !listLoaded || !isFirebaseConfigured) return
+    if (fromList || !listLoaded) return
     let active = true
-    loadPublicDb()
-      .then((db) => db.fetchPost(id))
+    fetchPost(id)
       .catch(() => null)
       .then((post) => {
         if (active) setFetched({ id, post })
@@ -37,7 +36,6 @@ function usePost(id: string): Post | null | undefined {
 
   if (fromList) return fromList
   if (!listLoaded) return undefined
-  if (!isFirebaseConfigured) return null
   return fetched?.id === id ? fetched.post : undefined
 }
 

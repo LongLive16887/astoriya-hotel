@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import { ApiError } from '../../lib/api'
 
 export type ToastTone = 'success' | 'error' | 'info'
 
@@ -28,11 +29,29 @@ export const ConfirmContext = createContext<(options: ConfirmOptions) => Promise
 /** Asks the user to confirm; resolves with their answer. */
 export const useConfirm = () => useContext(ConfirmContext)
 
-/** Human-readable text for an error thrown by Firebase or our own code. */
+const API_ERRORS: Record<string, string> = {
+  network: 'Нет соединения с сервером. Проверьте интернет.',
+  unauthorized: 'Сессия закончилась. Войдите снова.',
+  forbidden: 'Нет прав на это действие.',
+  conflict: 'Данные изменились в другом окне. Обновите страницу и повторите.',
+  too_large: 'Слишком большой объём данных.',
+  rate_limited: 'Слишком много попыток. Подождите немного.',
+  invalid_email: 'Проверьте адрес электронной почты.',
+  weak_password: 'Пароль должен быть не короче 8 символов.',
+  wrong_password: 'Текущий пароль указан неверно.',
+  exists: 'Администратор с таким email уже есть.',
+  self: 'Свой аккаунт удалить нельзя.',
+  invalid_id: 'Недопустимый адрес страницы.',
+  not_found: 'Запись не найдена: возможно, её уже удалили.',
+}
+
+/** Human-readable text for an error from the API or our own code. */
 export function errorMessage(error: unknown): string {
-  const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : ''
-  if (code === 'permission-denied') return 'Нет прав на это действие. Проверьте доступ администратора.'
-  if (code === 'unavailable') return 'Нет соединения с базой данных. Проверьте интернет.'
+  if (error instanceof ApiError) {
+    if (API_ERRORS[error.code]) return API_ERRORS[error.code]
+    if (error.status >= 500) return 'Ошибка на сервере. Попробуйте ещё раз через минуту.'
+    return 'Что-то пошло не так. Попробуйте ещё раз.'
+  }
   if (error instanceof Error && error.message) return error.message
   return 'Что-то пошло не так. Попробуйте ещё раз.'
 }

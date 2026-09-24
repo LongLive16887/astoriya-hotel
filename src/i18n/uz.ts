@@ -201,9 +201,9 @@ const uz: Dict = {
     done: 'Tayyor',
     errorTitle: 'Soʻrovni yuborib boʻlmadi',
     errorText: 'Internet aloqasini tekshirib, qayta urinib koʻring — yoki bizga Telegram orqali yozing.',
-    unavailable: 'Onlayn soʻrovlar vaqtincha ishlamayapti. Soʻrovingizni Telegram orqali yuboring yoki qoʻngʻiroq qiling.',
+    tooMany: 'Bu qurilmadan allaqachon koʻp soʻrov yuborilgan. Bizga Telegram orqali yozing yoki qoʻngʻiroq qiling — darhol javob beramiz.',
     errorTextCall: 'Internet aloqasini tekshirib, qayta urinib koʻring — yoki bizga qoʻngʻiroq qiling.',
-    unavailableCall: 'Onlayn soʻrovlar vaqtincha ishlamayapti. Bizga qoʻngʻiroq qiling — xona tanlashda yordam beramiz.',
+    tooManyCall: 'Bu qurilmadan allaqachon koʻp soʻrov yuborilgan. Bizga qoʻngʻiroq qiling — darhol javob beramiz.',
     copyAndOpen: 'Telegram orqali yuborish',
     copied: 'Soʻrov matni nusxalandi — uni mehmonxona bilan chatga joylashtiring.',
     requestText:

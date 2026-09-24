@@ -23,14 +23,14 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), siteUrl(env.VITE_SITE_URL ?? '')],
     server: {
       port: 3000,
-    },
-    build: {
-      // The admin chunk carries the full Firebase SDK (auth, realtime Firestore, storage);
-      // it is loaded only on /admin, so its size does not affect visitors.
-      chunkSizeWarningLimit: 700,
+      // The API runs separately in development (npm run dev starts both).
+      proxy: {
+        '/api': 'http://127.0.0.1:3001',
+        '/uploads': 'http://127.0.0.1:3001',
+      },
     },
     test: {
-      include: ['src/**/*.test.ts'],
+      include: ['src/**/*.test.ts', 'server/**/*.test.ts'],
       environment: 'node',
     },
   }

@@ -8,9 +8,10 @@ import { tr } from '../../content/localized'
 import type { BookingRequest, Lang } from '../../content/types'
 import { useLang } from '../../i18n/useLang'
 import { validateBooking, BOOKING_LIMITS, type BookingErrors } from '../../lib/booking'
-import { isFirebaseConfigured, loadPublicDb } from '../../lib/firebaseConfig'
+import { ApiError } from '../../lib/api'
 import { addDaysIso, formatDate, formatUzs, nightsBetween, todayIso } from '../../lib/format'
 import { telegramHref, telHref } from '../../lib/links'
+import { submitBooking } from '../../lib/publicApi'
 import type { BookingPrefill } from './context'
 import './BookingDialog.css'
 
@@ -28,7 +29,7 @@ export function BookingDialog({ prefill, onClose }: BookingDialogProps) {
   )
 }
 
-type Status = 'idle' | 'sending' | 'sent' | 'error' | 'unavailable'
+type Status = 'idle' | 'sending' | 'sent' | 'error' | 'tooMany'
 
 const FIELD_ORDER: (keyof BookingRequest)[] = [
   'checkIn',
@@ -129,18 +130,13 @@ function BookingForm({ prefill, onClose }: { prefill: BookingPrefill; onClose: (
       setStatus('sent')
       return
     }
-    if (!isFirebaseConfigured) {
-      setStatus('unavailable')
-      return
-    }
     setStatus('sending')
     try {
-      const db = await loadPublicDb()
-      await db.submitBooking({ ...form, roomName, lang })
+      await submitBooking({ ...form, roomName, lang })
       setStatus('sent')
     } catch (error) {
       console.error('Booking request failed', error)
-      setStatus('error')
+      setStatus(error instanceof ApiError && error.status === 429 ? 'tooMany' : 'error')
     }
   }
 
@@ -364,14 +360,14 @@ function BookingForm({ prefill, onClose }: { prefill: BookingPrefill; onClose: (
         </label>
       </fieldset>
 
-      {(status === 'error' || status === 'unavailable') && (
+      {(status === 'error' || status === 'tooMany') && (
         <div className="booking__alert" role="alert">
           <CircleAlert size={20} />
           <div>
             {status === 'error' && <strong>{t('booking.errorTitle')}</strong>}
             {settings.telegram ? (
               <>
-                <p>{status === 'error' ? t('booking.errorText') : t('booking.unavailable')}</p>
+                <p>{status === 'error' ? t('booking.errorText') : t('booking.tooMany')}</p>
                 <button type="button" className="btn btn--primary btn--sm" onClick={sendViaTelegram}>
                   <TelegramIcon />
                   {t('booking.copyAndOpen')}
@@ -380,7 +376,7 @@ function BookingForm({ prefill, onClose }: { prefill: BookingPrefill; onClose: (
               </>
             ) : (
               <>
-                <p>{status === 'error' ? t('booking.errorTextCall') : t('booking.unavailableCall')}</p>
+                <p>{status === 'error' ? t('booking.errorTextCall') : t('booking.tooManyCall')}</p>
                 <a className="btn btn--primary btn--sm" href={telHref(settings.phone)}>
                   <Phone />
                   {t('actions.call')}

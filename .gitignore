@@ -30,6 +30,7 @@ dist-ssr
 .env.test.local
 .env.production.local
 
-# Firebase
-.firebase/
-firebase-export-*
+# Local database, server build and release packages
+data/
+build/
+release/

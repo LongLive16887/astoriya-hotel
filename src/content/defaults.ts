@@ -1,6 +1,6 @@
 import type { Post, SiteContent } from './types'
 
-// Content shown until it is edited in the admin panel (and whenever Firebase is not configured).
+// Built-in content: a new database starts with it, and the site shows it while the server cannot be reached.
 // Facts are taken from the previous version of the site; edit them in the admin panel.
 
 const ALL_ROOM_AMENITIES = [
@@ -356,7 +356,7 @@ export const DEFAULT_CONTENT: SiteContent = {
   ],
 }
 
-/** News shown when Firebase is not configured. With Firebase, posts live in the `posts` collection. */
+/** Sample news a new database starts with. */
 export const DEFAULT_POSTS: Post[] = [
   {
     id: 'terrace',

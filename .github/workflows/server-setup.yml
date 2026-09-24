@@ -1,0 +1,87 @@
+name: Server setup
+
+# Installs everything the site needs on the server (Node.js, Caddy with HTTPS, services, backups,
+# the deploy agent) and the current build. Runs when the server settings in deploy/ change, or by hand.
+# Needs the repository secret SERVER_SSH_PASSWORD (the root password of the server).
+
+on:
+  push:
+    branches: [main, claude/website-redesign-d2u64y]
+    paths:
+      - deploy/**
+      - .github/workflows/server-setup.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: server-setup
+  cancel-in-progress: false
+
+jobs:
+  setup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SSHPASS: ${{ secrets.SERVER_SSH_PASSWORD }}
+    steps:
+      - name: Check the secret
+        run: |
+          if [ -z "$SSHPASS" ]; then
+            echo "::error::Add the repository secret SERVER_SSH_PASSWORD with the server's root password (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Build the site
+        run: |
+          . deploy/config.env
+          if [ -n "$DOMAIN" ]; then export VITE_SITE_URL="https://$DOMAIN"; fi
+          npm ci
+          npm run build
+          npm run package
+
+      - name: Connect to the server
+        run: |
+          . deploy/config.env
+          sudo apt-get install -y -qq sshpass >/dev/null
+          mkdir -p ~/.ssh
+          if [ -f deploy/server/known_hosts ]; then
+            cp deploy/server/known_hosts ~/.ssh/known_hosts
+          else
+            ssh-keyscan -T 20 "$SERVER_HOST" > ~/.ssh/known_hosts 2>/dev/null
+            echo "Host keys (first connection):"
+            ssh-keygen -lf ~/.ssh/known_hosts
+          fi
+          echo "SSH_TARGET=root@$SERVER_HOST" >> "$GITHUB_ENV"
+          sshpass -e ssh -o StrictHostKeyChecking=yes -o ConnectTimeout=20 "root@$SERVER_HOST" \
+            'grep PRETTY_NAME /etc/os-release; uname -srm; free -m | head -2; df -h / | tail -1; ss -ltnH | awk "{print \$4}" | sort -u | paste -sd " "'
+
+      - name: Upload and run the setup
+        run: |
+          . deploy/config.env
+          ssh_() { sshpass -e ssh -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 "$SSH_TARGET" "$@"; }
+          ssh_ 'rm -rf /root/astoria-setup && mkdir -p /root/astoria-setup'
+          sshpass -e scp -o StrictHostKeyChecking=yes -r deploy/server release/astoria-*.tar.gz "$SSH_TARGET:/root/astoria-setup/"
+          package="/root/astoria-setup/$(basename release/astoria-*.tar.gz)"
+          ssh_ "DOMAIN='$DOMAIN' WWW='$WWW' ADMIN_EMAIL='$ADMIN_EMAIL' REPO='${{ github.repository }}' RELEASE='$package' bash /root/astoria-setup/server/setup.sh"
+
+      - name: Check the site from outside
+        run: |
+          . deploy/config.env
+          curl -fsS --max-time 20 "http://$SERVER_HOST/api/health" && echo
+          if [ -n "$DOMAIN" ]; then
+            for i in $(seq 1 12); do
+              curl -fsS --max-time 20 "https://$DOMAIN/api/health" && echo && exit 0
+              echo "HTTPS for $DOMAIN is not ready yet (DNS or the certificate), retrying…"
+              sleep 10
+            done
+            echo "::warning::https://$DOMAIN does not answer yet. Check that its DNS A record points to $SERVER_HOST."
+          fi

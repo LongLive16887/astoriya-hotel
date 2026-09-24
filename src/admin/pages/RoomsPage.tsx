@@ -5,13 +5,13 @@ import type { Room } from '../../content/types'
 import { uniqueId } from '../../lib/ids'
 import { formatUsd, formatUzs } from '../../lib/format'
 import { errorMessage, useConfirm, useToast } from '../components/feedback'
-import { DefaultsNotice, EmptyState, PageHeader, Spinner } from '../components/PageHeader'
+import { EmptyState, PageHeader, Spinner } from '../components/PageHeader'
 import { Switch } from '../components/Switch'
 import { moveItem, mutateList, removeItem, useContentDoc } from '../lib/content'
 import { plural } from '../lib/format'
 
 export function RoomsPage() {
-  const { data: rooms, exists, loading, error } = useContentDoc('rooms')
+  const { data: rooms, loading, error } = useContentDoc('rooms')
   const toast = useToast()
   const confirm = useConfirm()
 
@@ -57,7 +57,6 @@ export function RoomsPage() {
           </Link>
         }
       />
-      {!loading && !exists && <DefaultsNotice what="показаны номера" />}
       {error && <p className="a-alert a-alert--danger">{error}</p>}
 
       {loading ? (

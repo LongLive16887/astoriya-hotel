@@ -1,28 +1,22 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, BedDouble, CalendarCheck, DatabaseZap, ExternalLink, ImagePlus, Inbox, Newspaper, TrendingUp } from 'lucide-react'
+import { Bell, BedDouble, CalendarCheck, ExternalLink, ImagePlus, Inbox, Newspaper, TrendingUp } from 'lucide-react'
 import { addDaysIso, todayIso } from '../../lib/format'
 import { useAdminUser } from '../auth/context'
-import { errorMessage, useToast } from '../components/feedback'
+import { useToast } from '../components/feedback'
 import { EmptyState, PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
 import { useArrivals, useBookingsSince } from '../lib/bookings'
-import { saveMissingDefaults, useContentDoc } from '../lib/content'
+import { useContentDoc } from '../lib/content'
 import { formatDateTime, greeting, guestsLabel, stayLabel } from '../lib/format'
 import { notificationsSupported } from '../lib/notifications'
-import { saveDefaultPostsIfEmpty } from '../lib/posts'
 import { useNewBookingsList } from '../layout/newBookings'
 
 export function DashboardPage() {
   const user = useAdminUser()
   const toast = useToast()
   const newBookings = useNewBookingsList()
-  const settings = useContentDoc('settings')
   const rooms = useContentDoc('rooms')
-  const services = useContentDoc('services')
-  const gallery = useContentDoc('gallery')
-  const reviews = useContentDoc('reviews')
-  const [seeding, setSeeding] = useState(false)
   const [weekAgo] = useState(() => Date.now() - 7 * 86_400_000)
   const [permission, setPermission] = useState(() => (notificationsSupported ? Notification.permission : 'unsupported'))
 
@@ -31,23 +25,7 @@ export function DashboardPage() {
   const arrivals = useArrivals(today, addDaysIso(today, 7))
   const upcoming = arrivals.bookings.filter((b) => b.status === 'confirmed')
   const loading = lastWeek.loading || arrivals.loading
-  const docs = [settings, rooms, services, gallery, reviews]
-  const notSaved = docs.some((d) => !d.loading && !d.exists)
   const visibleRooms = rooms.data.filter((r) => r.visible).length
-
-  const seed = async () => {
-    setSeeding(true)
-    try {
-      const created = await saveMissingDefaults()
-      // Sample news come with the very first save only, so deleting every post later does not bring them back.
-      const addedPosts = created.includes('settings') ? await saveDefaultPostsIfEmpty() : 0
-      toast.success(created.length || addedPosts ? 'Контент сохранён в базе' : 'Весь контент уже в базе')
-    } catch (error) {
-      toast.error(errorMessage(error))
-    } finally {
-      setSeeding(false)
-    }
-  }
 
   const enableNotifications = async () => {
     const result = await Notification.requestPermission()
@@ -66,24 +44,6 @@ export function DashboardPage() {
           </a>
         }
       />
-
-      {notSaved && (
-        <div className="a-card">
-          <div className="a-card__head">
-            <div>
-              <h2 className="a-card__title">Сохраните контент сайта в базе</h2>
-              <p className="a-hint">
-                Часть разделов пока показывает тексты и фото по умолчанию. Сохраните их в базу, чтобы редактировать
-                всё из панели. Уже сохранённые разделы не изменятся.
-              </p>
-            </div>
-            <button type="button" className="a-btn a-btn--primary" onClick={seed} disabled={seeding}>
-              <DatabaseZap size={16} />
-              {seeding ? 'Сохраняем…' : 'Сохранить контент'}
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="a-stat-grid">
         <Link to="/admin/bookings?status=new" className="a-stat a-stat--accent">

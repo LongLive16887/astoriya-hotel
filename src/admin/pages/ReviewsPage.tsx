@@ -6,7 +6,7 @@ import type { Review } from '../../content/types'
 import { randomId } from '../../lib/ids'
 import { errorMessage, useConfirm, useToast } from '../components/feedback'
 import { Field, LocalizedField } from '../components/LocalizedField'
-import { DefaultsNotice, EmptyState, PageHeader, Spinner } from '../components/PageHeader'
+import { EmptyState, PageHeader, Spinner } from '../components/PageHeader'
 import { Switch } from '../components/Switch'
 import { moveItem, mutateList, removeItem, upsertItem, useContentDoc } from '../lib/content'
 
@@ -22,7 +22,7 @@ const newReview = (): Review => ({
 })
 
 export function ReviewsPage() {
-  const { data: reviews, exists, loading } = useContentDoc('reviews')
+  const { data: reviews, loading } = useContentDoc('reviews')
   const toast = useToast()
   const confirm = useConfirm()
   const [editing, setEditing] = useState<Review | null>(null)
@@ -54,7 +54,6 @@ export function ReviewsPage() {
           </button>
         }
       />
-      {!loading && !exists && <DefaultsNotice what="показаны отзывы" />}
 
       {loading ? (
         <Spinner />

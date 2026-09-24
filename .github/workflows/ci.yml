@@ -1,0 +1,117 @@
+name: CI/CD
+
+# Every pull request and every commit on main is checked. A commit on main is also published
+# as the "production" release, which the server installs by itself within a minute
+# (see deploy/server/astoria-deploy.sh); the last job waits until the site runs it.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Lint, test, build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Site address for link previews
+        run: |
+          . deploy/config.env
+          if [ -n "$DOMAIN" ]; then echo "VITE_SITE_URL=https://$DOMAIN" >> "$GITHUB_ENV"; fi
+
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+      - name: Package the release
+        if: github.event_name == 'push'
+        run: npm run package
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
+        with:
+          name: release
+          path: release/
+          retention-days: 7
+
+  release:
+    name: Publish for the server
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: production-release
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: release
+
+      - name: Upload to the "production" release
+        run: |
+          if ! gh release view production >/dev/null 2>&1; then
+            gh release create production --title "Production build" --prerelease --target "$SHA" \
+              --notes "Built by the CI/CD workflow from main. The server installs the build named in version.txt."
+          fi
+          # The package first, then version.txt, which tells the server that a new build is ready.
+          gh release upload production "release/astoria-$SHA.tar.gz" "release/astoria-$SHA.tar.gz.sha256" --clobber
+          gh release upload production release/version.txt --clobber
+          gh api -X PATCH "repos/$GH_REPO/git/refs/tags/production" -f sha="$SHA" -F force=true >/dev/null
+
+      - name: Remove old builds (keep three)
+        run: |
+          gh release view production --json assets \
+            -q '.assets | map(select(.name | test("^astoria-[0-9a-f]{40}\\.tar\\.gz"))) | sort_by(.createdAt) | reverse | .[6:] | .[].name' |
+            while read -r name; do gh release delete-asset production "$name" --yes; done
+
+  verify:
+    name: Wait for the site to run it
+    needs: release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: deploy/config.env
+          sparse-checkout-cone-mode: false
+
+      - name: Check /api/health
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          . deploy/config.env
+          url="http://$SERVER_HOST/api/health"
+          [ -n "$DOMAIN" ] && url="https://$DOMAIN/api/health"
+          for i in $(seq 1 40); do
+            version="$(curl -fsS --max-time 10 "$url" | sed -n 's/.*"version":"\([^"]*\)".*/\1/p' || true)"
+            if [ "$version" = "$SHA" ]; then echo "The site runs $SHA"; exit 0; fi
+            echo "Waiting: the site runs ${version:-nothing yet}"
+            sleep 15
+          done
+          echo "::error::The server did not install $SHA within 10 minutes. On the server: journalctl -u astoria-deploy -u astoria"
+          exit 1
