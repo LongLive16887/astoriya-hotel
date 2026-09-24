@@ -41,6 +41,8 @@ const FIELD_ORDER: (keyof BookingRequest)[] = [
   'message',
 ]
 
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
+
 function initialForm(prefill: BookingPrefill, lang: Lang): BookingRequest {
   const checkIn = prefill.checkIn ?? ''
   return {
@@ -50,8 +52,9 @@ function initialForm(prefill: BookingPrefill, lang: Lang): BookingRequest {
     message: '',
     checkIn,
     checkOut: prefill.checkOut ?? (checkIn ? addDaysIso(checkIn, 1) : ''),
-    adults: prefill.adults ?? 2,
-    children: prefill.children ?? 0,
+    // A room may hold more guests than one request can book adults.
+    adults: clamp(prefill.adults ?? 2, 1, BOOKING_LIMITS.maxAdults),
+    children: clamp(prefill.children ?? 0, 0, BOOKING_LIMITS.maxChildren),
     roomId: prefill.roomId ?? '',
     roomName: '',
     lang,
@@ -196,10 +199,12 @@ function BookingForm({ prefill, onClose }: { prefill: BookingPrefill; onClose: (
         <Phone />
         {t('actions.call')}
       </a>
-      <a className="btn btn--outline btn--sm" href={telegramHref(settings.telegram)} target="_blank" rel="noopener noreferrer">
-        <TelegramIcon />
-        {t('actions.telegram')}
-      </a>
+      {settings.telegram && (
+        <a className="btn btn--outline btn--sm" href={telegramHref(settings.telegram)} target="_blank" rel="noopener noreferrer">
+          <TelegramIcon />
+          {t('actions.telegram')}
+        </a>
+      )}
     </div>
   )
 
@@ -364,12 +369,24 @@ function BookingForm({ prefill, onClose }: { prefill: BookingPrefill; onClose: (
           <CircleAlert size={20} />
           <div>
             {status === 'error' && <strong>{t('booking.errorTitle')}</strong>}
-            <p>{status === 'error' ? t('booking.errorText') : t('booking.unavailable')}</p>
-            <button type="button" className="btn btn--primary btn--sm" onClick={sendViaTelegram}>
-              <TelegramIcon />
-              {t('booking.copyAndOpen')}
-            </button>
-            {copied && <p className="booking__copied">{t('booking.copied')}</p>}
+            {settings.telegram ? (
+              <>
+                <p>{status === 'error' ? t('booking.errorText') : t('booking.unavailable')}</p>
+                <button type="button" className="btn btn--primary btn--sm" onClick={sendViaTelegram}>
+                  <TelegramIcon />
+                  {t('booking.copyAndOpen')}
+                </button>
+                {copied && <p className="booking__copied">{t('booking.copied')}</p>}
+              </>
+            ) : (
+              <>
+                <p>{status === 'error' ? t('booking.errorTextCall') : t('booking.unavailableCall')}</p>
+                <a className="btn btn--primary btn--sm" href={telHref(settings.phone)}>
+                  <Phone />
+                  {t('actions.call')}
+                </a>
+              </>
+            )}
           </div>
         </div>
       )}

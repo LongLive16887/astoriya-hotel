@@ -6,45 +6,41 @@ import { useAdminUser } from '../auth/context'
 import { errorMessage, useToast } from '../components/feedback'
 import { EmptyState, PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
-import { useBookings } from '../lib/bookings'
+import { useArrivals, useBookingsSince } from '../lib/bookings'
 import { saveMissingDefaults, useContentDoc } from '../lib/content'
 import { formatDateTime, greeting, guestsLabel, stayLabel } from '../lib/format'
-import { saveDefaultPostsIfEmpty, useAdminPosts } from '../lib/posts'
+import { notificationsSupported } from '../lib/notifications'
+import { saveDefaultPostsIfEmpty } from '../lib/posts'
 import { useNewBookingsList } from '../layout/newBookings'
 
 export function DashboardPage() {
   const user = useAdminUser()
   const toast = useToast()
   const newBookings = useNewBookingsList()
-  const { bookings, loading } = useBookings(300)
   const settings = useContentDoc('settings')
   const rooms = useContentDoc('rooms')
   const services = useContentDoc('services')
   const gallery = useContentDoc('gallery')
   const reviews = useContentDoc('reviews')
-  const posts = useAdminPosts()
   const [seeding, setSeeding] = useState(false)
-  const [now] = useState(() => Date.now())
-  const [permission, setPermission] = useState(() =>
-    'Notification' in window ? Notification.permission : 'unsupported',
-  )
+  const [weekAgo] = useState(() => Date.now() - 7 * 86_400_000)
+  const [permission, setPermission] = useState(() => (notificationsSupported ? Notification.permission : 'unsupported'))
 
   const today = todayIso()
-  const weekAhead = addDaysIso(today, 7)
-  const weekAgo = now - 7 * 86_400_000
-  const lastWeek = bookings.filter((b) => b.createdAt && b.createdAt.getTime() >= weekAgo).length
-  const upcoming = bookings
-    .filter((b) => b.status === 'confirmed' && b.checkIn >= today && b.checkIn <= weekAhead)
-    .sort((a, b) => a.checkIn.localeCompare(b.checkIn))
+  const lastWeek = useBookingsSince(weekAgo)
+  const arrivals = useArrivals(today, addDaysIso(today, 7))
+  const upcoming = arrivals.bookings.filter((b) => b.status === 'confirmed')
+  const loading = lastWeek.loading || arrivals.loading
   const docs = [settings, rooms, services, gallery, reviews]
-  const notSaved = docs.some((d) => !d.loading && !d.exists) || (!posts.loading && posts.posts.length === 0)
+  const notSaved = docs.some((d) => !d.loading && !d.exists)
   const visibleRooms = rooms.data.filter((r) => r.visible).length
 
   const seed = async () => {
     setSeeding(true)
     try {
       const created = await saveMissingDefaults()
-      const addedPosts = await saveDefaultPostsIfEmpty()
+      // Sample news come with the very first save only, so deleting every post later does not bring them back.
+      const addedPosts = created.includes('settings') ? await saveDefaultPostsIfEmpty() : 0
       toast.success(created.length || addedPosts ? 'Контент сохранён в базе' : 'Весь контент уже в базе')
     } catch (error) {
       toast.error(errorMessage(error))
@@ -100,7 +96,7 @@ export function DashboardPage() {
           <span className="a-stat__label">
             <TrendingUp size={16} /> Заявок за 7 дней
           </span>
-          <span className="a-stat__value">{loading ? '…' : lastWeek}</span>
+          <span className="a-stat__value">{loading ? '…' : lastWeek.bookings.length}</span>
         </div>
         <div className="a-stat">
           <span className="a-stat__label">

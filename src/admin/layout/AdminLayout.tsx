@@ -20,6 +20,7 @@ import { useAdminUser } from '../auth/context'
 import { useToast } from '../components/feedback'
 import { useNewBookings, type Booking } from '../lib/bookings'
 import { getAdminAuth } from '../lib/firebase'
+import { notify } from '../lib/notifications'
 import { NewBookingsContext } from './newBookings'
 
 const NAV = [
@@ -43,12 +44,8 @@ export function AdminLayout() {
   const onNewBooking = useCallback(
     (booking: Booking) => {
       toast.info(`Новая заявка: ${booking.name}`)
-      if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
-        new Notification('Новая заявка на бронирование', {
-          body: `${booking.name} · ${booking.phone}`,
-          icon: '/icon-192.png',
-          tag: booking.id,
-        })
+      if (document.hidden) {
+        notify('Новая заявка на бронирование', { body: `${booking.name} · ${booking.phone}`, icon: '/icon-192.png', tag: booking.id })
       }
     },
     [toast],

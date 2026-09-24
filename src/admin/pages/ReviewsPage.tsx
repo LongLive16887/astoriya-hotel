@@ -31,8 +31,10 @@ export function ReviewsPage() {
     try {
       await mutateList('reviews', mutate)
       if (success) toast.success(success)
+      return true
     } catch (e) {
       toast.error(errorMessage(e))
+      return false
     }
   }
 
@@ -108,8 +110,11 @@ export function ReviewsPage() {
             onClose={() => setEditing(null)}
             onSave={async (review) => {
               const isNew = !review.id
-              await change((items) => (isNew ? [{ ...review, id: randomId(10) }, ...items] : upsertItem(items, review)), isNew ? 'Отзыв добавлен' : 'Отзыв сохранён')
-              setEditing(null)
+              const saved = await change(
+                (items) => (isNew ? [{ ...review, id: randomId(10) }, ...items] : upsertItem(items, review)),
+                isNew ? 'Отзыв добавлен' : 'Отзыв сохранён',
+              )
+              if (saved) setEditing(null)
             }}
           />
         )}

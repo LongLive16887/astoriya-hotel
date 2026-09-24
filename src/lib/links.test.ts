@@ -25,6 +25,13 @@ describe('links', () => {
   it('allows only Google Maps embeds in the map frame', () => {
     expect(safeMapEmbed('https://www.google.com/maps/embed?pb=1')).toBe('https://www.google.com/maps/embed?pb=1')
     expect(safeMapEmbed('https://evil.example/maps/embed')).toBeNull()
+    expect(safeMapEmbed('https://www.google.ru/maps/embed?pb=1')).toBe('https://www.google.ru/maps/embed?pb=1')
+    expect(safeMapEmbed('https://google.evil.com/maps/embed')).toBeNull()
+    expect(safeMapEmbed('https://www.google.com.attacker.io/maps/embed')).toBeNull()
+    expect(safeMapEmbed('https://www.google.com@evil.com/maps/embed')).toBeNull()
+    expect(safeMapEmbed('http://www.google.com/maps/embed?pb=1')).toBeNull()
+    expect(safeMapEmbed('https://www.google.com/search?q=maps/embed')).toBeNull()
+    expect(safeMapEmbed('not a url')).toBeNull()
   })
 })
 

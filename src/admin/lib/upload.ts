@@ -5,6 +5,8 @@ import { getAdminStorage } from './firebase'
 const MAX_SIDE = 2000
 const QUALITY = 0.84
 const MAX_FILE_SIZE = 25 * 1024 * 1024
+/** What storage.rules accept (and the Cloudinary free plan allows) for the file that is sent. */
+const MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 
 const cloudinary = {
   cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
@@ -55,6 +57,9 @@ export async function uploadImage(file: File, onProgress?: (fraction: number) =>
   if (file.size > MAX_FILE_SIZE) throw new UploadError('Файл больше 25 МБ')
 
   const blob = await compressImage(file)
+  if (blob.size >= MAX_UPLOAD_SIZE) {
+    throw new UploadError('Файл больше 10 МБ. GIF и SVG загружаются без сжатия — уменьшите файл и попробуйте снова.')
+  }
   return uploadTarget === 'cloudinary' ? uploadToCloudinary(blob, onProgress) : uploadToFirebase(blob, onProgress)
 }
 

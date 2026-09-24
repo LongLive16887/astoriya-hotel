@@ -15,6 +15,7 @@ import { SaveBar } from '../components/SaveBar'
 import { Switch } from '../components/Switch'
 import { useUnsavedChanges } from '../components/useUnsavedChanges'
 import { mutateList, upsertItem, useContentDoc } from '../lib/content'
+import { mergeEdits } from '../lib/merge'
 
 const emptyRoom = (): Room => ({
   id: '',
@@ -60,9 +61,11 @@ function BackLink() {
 function RoomEditor({ initial, isNew, takenIds }: { initial: Room; isNew: boolean; takenIds: string[] }) {
   const navigate = useNavigate()
   const toast = useToast()
+  // `initial` follows the database; changes are measured against the version the form opened with.
+  const [base, setBase] = useState(initial)
   const [room, setRoom] = useState(initial)
   const [saving, setSaving] = useState(false)
-  const dirty = JSON.stringify(room) !== JSON.stringify(initial)
+  const dirty = JSON.stringify(room) !== JSON.stringify(base)
   const { allowLeave } = useUnsavedChanges(dirty)
 
   const set = <K extends keyof Room>(key: K, value: Room[K]) => setRoom((r) => ({ ...r, [key]: value }))
@@ -78,7 +81,11 @@ function RoomEditor({ initial, isNew, takenIds }: { initial: Room; isNew: boolea
     setSaving(true)
     try {
       const id = isNew ? uniqueId(title, takenIds) : room.id
-      await mutateList('rooms', (items) => upsertItem(items, { ...room, id }))
+      await mutateList('rooms', (items) => {
+        const current = items.find((r) => r.id === id)
+        // Keep what was changed meanwhile in fields this form did not touch.
+        return upsertItem(items, current && !isNew ? mergeEdits(current, base, room) : { ...room, id })
+      })
       toast.success(isNew ? 'Номер добавлен' : 'Изменения сохранены')
       allowLeave()
       navigate('/admin/rooms')
@@ -218,7 +225,17 @@ function RoomEditor({ initial, isNew, takenIds }: { initial: Room; isNew: boolea
         </section>
       </div>
 
-      {dirty && <SaveBar saving={saving} onSave={save} onReset={() => setRoom(initial)} />}
+      {dirty && (
+        <SaveBar
+          saving={saving}
+          onSave={save}
+          onReset={() => {
+            // Discard the edits and show what is stored now.
+            setBase(initial)
+            setRoom(initial)
+          }}
+        />
+      )}
     </div>
   )
 }

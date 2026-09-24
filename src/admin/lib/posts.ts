@@ -13,7 +13,7 @@ import {
 import { DEFAULT_POSTS } from '../../content/defaults'
 import { normalizePost } from '../../content/normalize'
 import type { Post } from '../../content/types'
-import { currentEditor, getDb } from './firebase'
+import { getDb } from './firebase'
 
 interface PostsState {
   posts: Post[]
@@ -44,11 +44,7 @@ export function useAdminPosts(): PostsState {
 
 export async function savePost(post: Post) {
   const { id, ...fields } = post
-  await setDoc(doc(getDb(), 'posts', id), {
-    ...fields,
-    updatedAt: serverTimestamp(),
-    updatedBy: currentEditor(),
-  })
+  await setDoc(doc(getDb(), 'posts', id), { ...fields, updatedAt: serverTimestamp() })
 }
 
 export async function deletePost(id: string) {

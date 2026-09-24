@@ -6,6 +6,7 @@ import { useContent } from '../../content/context'
 import { tr } from '../../content/localized'
 import { useLang } from '../../i18n/useLang'
 import { formatMonth } from '../../lib/format'
+import { shownReviews } from '../layout/nav'
 import { SectionHeading } from './SectionHeading'
 import './Reviews.css'
 
@@ -15,7 +16,7 @@ export function Reviews() {
   const { reviews } = useContent()
   const [index, setIndex] = useState(0)
 
-  const visible = reviews.filter((r) => r.visible && tr(r.text, lang))
+  const visible = shownReviews(reviews, lang)
   if (visible.length === 0) return null
 
   const count = visible.length
@@ -62,7 +63,7 @@ export function Reviews() {
             <button
               type="button"
               className="reviews__arrow"
-              aria-label={t('a11y.prev')}
+              aria-label={t('a11y.prevReview')}
               onClick={() => setIndex((i) => (i - 1 + count) % count)}
             >
               <ChevronLeft />
@@ -81,7 +82,7 @@ export function Reviews() {
             <button
               type="button"
               className="reviews__arrow"
-              aria-label={t('a11y.next')}
+              aria-label={t('a11y.nextReview')}
               onClick={() => setIndex((i) => (i + 1) % count)}
             >
               <ChevronRight />

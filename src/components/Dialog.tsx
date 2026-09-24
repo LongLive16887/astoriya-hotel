@@ -18,6 +18,7 @@ interface DialogProps {
 export function Dialog({ open, onClose, labelledBy, label, className = '', children }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const returnFocus = useRef<HTMLElement | null>(null)
+  const pressedOnBackdrop = useRef(false)
 
   useEffect(() => {
     const dialog = ref.current
@@ -41,9 +42,13 @@ export function Dialog({ open, onClose, labelledBy, label, className = '', child
         event.preventDefault()
         onClose()
       }}
+      onPointerDown={(event) => {
+        pressedOnBackdrop.current = event.target === event.currentTarget
+      }}
       onClick={(event) => {
-        // A click on the <dialog> itself (not its content) is a click on the backdrop.
-        if (event.target === event.currentTarget) onClose()
+        // A click on the <dialog> itself (not its content) is a click on the backdrop. It must also
+        // start there: selecting text in a field and releasing the mouse outside is not a click away.
+        if (event.target === event.currentTarget && pressedOnBackdrop.current) onClose()
       }}
     >
       {open && children}

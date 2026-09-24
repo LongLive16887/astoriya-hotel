@@ -35,12 +35,24 @@ const dateTime = new Intl.DateTimeFormat('ru-RU', {
 
 export const formatDateTime = (date: Date | null) => (date ? dateTime.format(date) : '—')
 
-/** Guests type numbers in many ways; links need "+998…". */
-export function internationalPhone(phone: string): string {
-  const digits = phone.replace(/\D/g, '')
-  if (phone.trim().startsWith('+')) return `+${digits}`
+/**
+ * Guests type numbers in many ways; call and messenger links need the international form.
+ * Returns null when the country code cannot be worked out.
+ */
+export function internationalPhone(phone: string): string | null {
+  const typed = phone.trim()
+  const digits = typed.replace(/\D/g, '')
+  if (!digits) return null
+  if (typed.startsWith('+')) return `+${digits}`
+  if (digits.startsWith('00')) return `+${digits.slice(2)}`
+  // Uzbekistan without the country code: 90 123 45 67, or with the old trunk prefix 8 90 123 45 67.
   if (digits.length === 9) return `+998${digits}`
-  return `+${digits}`
+  if (digits.length === 10 && digits.startsWith('8')) return `+998${digits.slice(1)}`
+  // Russia and Kazakhstan: 8 (912) 000-00-00.
+  if (digits.length === 11 && digits.startsWith('8')) return `+7${digits.slice(1)}`
+  // Long enough to include a country code.
+  if (digits.length >= 11 && !digits.startsWith('0')) return `+${digits}`
+  return null
 }
 
 export const LANG_LABELS = { uz: 'узбекский', ru: 'русский', en: 'английский' } as const

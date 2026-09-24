@@ -37,7 +37,10 @@ export function getAdminStorage(): FirebaseStorage {
   return storage
 }
 
-/** Email of the signed-in admin, stored next to every change. */
+/**
+ * Email of the signed-in admin, stored with changes to booking requests (only admins can read those).
+ * Content and news are public, so they do not record who edited them.
+ */
 export function currentEditor(): string {
   return getAdminAuth().currentUser?.email ?? 'unknown'
 }

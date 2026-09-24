@@ -9,10 +9,12 @@ import { useLang } from '../../i18n/useLang'
 import { formatDate } from '../../lib/format'
 import './PostCard.css'
 
-export function PostCard({ post }: { post: Post }) {
+/** `headingLevel` 2 on the news page, where the cards come right under the page title. */
+export function PostCard({ post, headingLevel = 3 }: { post: Post; headingLevel?: 2 | 3 }) {
   const { t } = useTranslation()
   const lang = useLang()
   const excerpt = tr(post.excerpt, lang)
+  const Heading = headingLevel === 2 ? 'h2' : 'h3'
 
   return (
     <article className="post-card reveal">
@@ -31,11 +33,11 @@ export function PostCard({ post }: { post: Post }) {
             {formatDate(post.date, lang)}
           </time>
         )}
-        <h3 className="post-card__title">
+        <Heading className="post-card__title">
           <Link to={`/news/${post.id}`} className="post-card__link">
             {tr(post.title, lang)}
           </Link>
-        </h3>
+        </Heading>
         {excerpt && <p className="post-card__excerpt">{excerpt}</p>}
         <span className="post-card__more" aria-hidden="true">
           {t('actions.readMore')}

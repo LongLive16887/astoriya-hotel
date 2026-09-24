@@ -10,6 +10,7 @@ import { DefaultsNotice, PageHeader, Spinner } from '../components/PageHeader'
 import { SaveBar } from '../components/SaveBar'
 import { useUnsavedChanges } from '../components/useUnsavedChanges'
 import { saveSettings, useContentDoc } from '../lib/content'
+import { mergeEdits } from '../lib/merge'
 
 export function SettingsPage() {
   const { data, exists, loading, error } = useContentDoc('settings')
@@ -19,7 +20,7 @@ export function SettingsPage() {
 
 function SettingsForm({ initial, exists, error }: { initial: SiteSettings; exists: boolean; error: string | null }) {
   const toast = useToast()
-  // What is stored in the database; the form is compared with it to detect unsaved changes.
+  // The version the form started from (or last saved); unsaved changes are measured against it.
   const [saved, setSaved] = useState(initial)
   const [s, setS] = useState(initial)
   const [saving, setSaving] = useState(false)
@@ -51,8 +52,10 @@ function SettingsForm({ initial, exists, error }: { initial: SiteSettings; exist
     }
     setSaving(true)
     try {
-      await saveSettings(s)
-      setSaved(s)
+      const stored = await saveSettings(saved, s)
+      setSaved(stored)
+      // Show what is stored now, keeping anything typed while the save was in flight.
+      setS((latest) => mergeEdits(stored, s, latest))
       toast.success('Настройки сохранены — сайт обновится у гостей при следующем открытии')
     } catch (e) {
       toast.error(errorMessage(e))
@@ -231,7 +234,17 @@ function SettingsForm({ initial, exists, error }: { initial: SiteSettings; exist
         </section>
       </div>
 
-      {dirty && <SaveBar saving={saving} onSave={save} onReset={() => setS(saved)} />}
+      {dirty && (
+        <SaveBar
+          saving={saving}
+          onSave={save}
+          onReset={() => {
+            // Discard the edits and show what is stored now.
+            setSaved(initial)
+            setS(initial)
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -7,13 +7,14 @@ import { useContent } from '../../content/context'
 import { tr } from '../../content/localized'
 import { useLang } from '../../i18n/useLang'
 import { instagramHref, telegramHref, telHref, whatsappHref } from '../../lib/links'
-import { NAV_SECTIONS, sectionLink } from './nav'
+import { sectionLink, useNavSections } from './nav'
 import './Footer.css'
 
 export function Footer() {
   const { t } = useTranslation()
   const lang = useLang()
   const { settings } = useContent()
+  const sections = useNavSections()
   const year = new Date().getFullYear()
 
   return (
@@ -47,7 +48,7 @@ export function Footer() {
           <nav className="site-footer__col" aria-label={t('footer.navigation')}>
             <h2 className="site-footer__title">{t('footer.navigation')}</h2>
             <ul>
-              {NAV_SECTIONS.map((item) => (
+              {sections.map((item) => (
                 <li key={item.id}>
                   <Link to={sectionLink(item.id)}>{t(item.label)}</Link>
                 </li>

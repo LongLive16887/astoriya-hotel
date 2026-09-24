@@ -4,7 +4,7 @@ import { isFirebaseConfigured } from '../lib/firebaseConfig'
 import { AuthProvider } from './auth/AuthProvider'
 import { useAuthState } from './auth/context'
 import { LoginPage } from './auth/LoginPage'
-import { NoAccess } from './auth/NoAccess'
+import { AccessCheckFailed, NoAccess } from './auth/NoAccess'
 import { SetupScreen } from './auth/SetupScreen'
 import { FeedbackProvider } from './components/FeedbackProvider'
 import { EditLangProvider } from './components/LocalizedField'
@@ -60,6 +60,7 @@ function AdminGate() {
     )
   }
   if (auth.status === 'signed-out') return <LoginPage />
+  if (auth.status === 'check-failed') return <AccessCheckFailed user={auth.user} code={auth.code} retry={auth.retry} />
   if (!auth.isAdmin) return <NoAccess user={auth.user} />
 
   return (

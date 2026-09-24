@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   collection,
   deleteDoc,
@@ -11,6 +11,7 @@ import {
   Timestamp,
   updateDoc,
   where,
+  type Query,
 } from 'firebase/firestore'
 import { isLang } from '../../content/localized'
 import { BOOKING_STATUSES, type BookingRequest, type BookingStatus } from '../../content/types'
@@ -63,14 +64,15 @@ interface BookingsState {
   error: string | null
 }
 
-/** The latest `max` booking requests, updated live. */
-export function useBookings(max: number): BookingsState {
+const bookingsRef = () => collection(getDb(), 'bookings')
+
+function useBookingsQuery(bookingsQuery: Query): BookingsState {
   const [state, setState] = useState<BookingsState>({ bookings: [], loading: true, error: null })
 
   useEffect(
     () =>
       onSnapshot(
-        query(collection(getDb(), 'bookings'), orderBy('createdAt', 'desc'), limit(max)),
+        bookingsQuery,
         (snapshot) =>
           setState({
             bookings: snapshot.docs.map((d) => toBooking(d.id, d.data())),
@@ -79,10 +81,43 @@ export function useBookings(max: number): BookingsState {
           }),
         (error) => setState((s) => ({ ...s, loading: false, error: error.message })),
       ),
-    [max],
+    [bookingsQuery],
   )
 
   return state
+}
+
+/** The latest `max` booking requests, updated live. */
+export function useBookings(max: number): BookingsState {
+  return useBookingsQuery(useMemo(() => query(bookingsRef(), orderBy('createdAt', 'desc'), limit(max)), [max]))
+}
+
+/** Requests received since `since` (a timestamp in ms), updated live. */
+export function useBookingsSince(since: number): BookingsState {
+  return useBookingsQuery(useMemo(() => query(bookingsRef(), where('createdAt', '>=', Timestamp.fromMillis(since))), [since]))
+}
+
+/** Requests with check-in between two ISO dates (inclusive), whatever their status, updated live. */
+export function useArrivals(from: string, to: string): BookingsState {
+  return useBookingsQuery(
+    useMemo(() => query(bookingsRef(), where('checkIn', '>=', from), where('checkIn', '<=', to), orderBy('checkIn')), [from, to]),
+  )
+}
+
+/** One request by id, updated live; null while loading, when missing, or when `id` is null. */
+export function useBooking(id: string | null): Booking | null {
+  const [booking, setBooking] = useState<Booking | null>(null)
+
+  useEffect(() => {
+    if (!id) return
+    return onSnapshot(
+      doc(getDb(), 'bookings', id),
+      (snapshot) => setBooking(snapshot.exists() ? toBooking(snapshot.id, snapshot.data()) : null),
+      () => setBooking(null),
+    )
+  }, [id])
+
+  return booking && booking.id === id ? booking : null
 }
 
 /** Live list of requests that nobody has handled yet; `onAdded` fires for requests arriving later. */
@@ -103,7 +138,8 @@ export function useNewBookings(onAdded?: (booking: Booking) => void): Booking[] 
         if (!initial) {
           snapshot
             .docChanges()
-            .filter((change) => change.type === 'added')
+            // Guests cannot set updatedAt, so a request that has it was moved back to "new" by an admin.
+            .filter((change) => change.type === 'added' && !('updatedAt' in change.doc.data()))
             .forEach((change) => onAddedRef.current?.(toBooking(change.doc.id, change.doc.data())))
         }
         initial = false

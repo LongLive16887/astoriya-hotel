@@ -23,7 +23,17 @@ describe('admin formatting', () => {
 
   it('turns local numbers into international ones', () => {
     expect(internationalPhone('90 123 45 67')).toBe('+998901234567')
+    expect(internationalPhone('8 (90) 123-45-67')).toBe('+998901234567')
     expect(internationalPhone('+7 (912) 000-00-00')).toBe('+79120000000')
+    expect(internationalPhone('8 (912) 000-00-00')).toBe('+79120000000')
     expect(internationalPhone('998901234567')).toBe('+998901234567')
+    expect(internationalPhone('00 998 90 123 45 67')).toBe('+998901234567')
+    expect(internationalPhone('44 7911 123456')).toBe('+447911123456')
+  })
+
+  it('gives up on numbers without a recognisable country code', () => {
+    expect(internationalPhone('0 90 123 45 67')).toBeNull()
+    expect(internationalPhone('123 45 67')).toBeNull()
+    expect(internationalPhone('')).toBeNull()
   })
 })

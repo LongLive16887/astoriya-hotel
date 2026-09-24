@@ -80,15 +80,20 @@ function DrawerBody({ booking, onClose }: { booking: Booking; onClose: () => voi
       <section className="a-field">
         <h3 className="a-section-title">Связаться с гостем</h3>
         <div className="a-contact-buttons">
-          <a className="a-btn a-btn--primary a-btn--sm" href={`tel:${phone}`}>
+          {/* Without a known country code the number is dialled as the guest typed it. */}
+          <a className="a-btn a-btn--primary a-btn--sm" href={`tel:${phone ?? booking.phone.replace(/[^\d+]/g, '')}`}>
             <Phone size={16} /> {booking.phone}
           </a>
-          <a className="a-btn a-btn--sm" href={`https://t.me/${phone}`} target="_blank" rel="noopener noreferrer">
-            <TelegramIcon size={16} /> Telegram
-          </a>
-          <a className="a-btn a-btn--sm" href={`https://wa.me/${phone.replace('+', '')}`} target="_blank" rel="noopener noreferrer">
-            <WhatsAppIcon size={16} /> WhatsApp
-          </a>
+          {phone && (
+            <>
+              <a className="a-btn a-btn--sm" href={`https://t.me/${phone}`} target="_blank" rel="noopener noreferrer">
+                <TelegramIcon size={16} /> Telegram
+              </a>
+              <a className="a-btn a-btn--sm" href={`https://wa.me/${phone.slice(1)}`} target="_blank" rel="noopener noreferrer">
+                <WhatsAppIcon size={16} /> WhatsApp
+              </a>
+            </>
+          )}
           {booking.email && (
             <a className="a-btn a-btn--sm" href={`mailto:${booking.email}`}>
               <Mail size={16} /> {booking.email}

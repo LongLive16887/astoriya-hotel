@@ -17,6 +17,10 @@ const uz: Dict = {
     mainNav: 'Asosiy menyu',
     photo: '{{total}} tadan {{n}}-surat',
     openPhoto: 'Suratni ochish: {{caption}}',
+    prevReview: 'Oldingi sharh',
+    nextReview: 'Keyingi sharh',
+    breadcrumb: 'Sahifa yoʻli',
+    loading: 'Yuklanmoqda',
   },
   nav: {
     about: 'Mehmonxona',
@@ -54,8 +58,7 @@ const uz: Dict = {
     adults_other: '{{count}} katta',
     children_one: '{{count}} bola',
     children_other: '{{count}} bola',
-    perNight: 'bir kecha',
-    fromPrice: '{{price}} dan',
+    perNight: 'bir kecha uchun',
     area: '{{value}} m²',
   },
   hero: {
@@ -134,7 +137,7 @@ const uz: Dict = {
   reviews: {
     eyebrow: 'Sharhlar',
     title: 'Mehmonlarimiz fikri',
-    source: '{{source}} dagi sharh',
+    source: 'Manba: {{source}}',
     rating: 'Baho: 5 dan {{value}}',
     goTo: '{{n}}-sharh',
   },
@@ -147,6 +150,8 @@ const uz: Dict = {
     notFound: 'Yangilik topilmadi',
     notFoundText: 'Ehtimol, u oʻchirilgan yoki hali eʼlon qilinmagan.',
     empty: 'Hozircha yangiliklar yoʻq.',
+    more: 'Yana koʻrsatish',
+    loadingMore: 'Yuklanmoqda…',
   },
   location: {
     eyebrow: 'Aloqa',
@@ -197,6 +202,8 @@ const uz: Dict = {
     errorTitle: 'Soʻrovni yuborib boʻlmadi',
     errorText: 'Internet aloqasini tekshirib, qayta urinib koʻring — yoki bizga Telegram orqali yozing.',
     unavailable: 'Onlayn soʻrovlar vaqtincha ishlamayapti. Soʻrovingizni Telegram orqali yuboring yoki qoʻngʻiroq qiling.',
+    errorTextCall: 'Internet aloqasini tekshirib, qayta urinib koʻring — yoki bizga qoʻngʻiroq qiling.',
+    unavailableCall: 'Onlayn soʻrovlar vaqtincha ishlamayapti. Bizga qoʻngʻiroq qiling — xona tanlashda yordam beramiz.',
     copyAndOpen: 'Telegram orqali yuborish',
     copied: 'Soʻrov matni nusxalandi — uni mehmonxona bilan chatga joylashtiring.',
     requestText:
@@ -220,6 +227,11 @@ const uz: Dict = {
   notFound: {
     title: 'Sahifa topilmadi',
     text: 'Ehtimol, u koʻchirilgan yoki oʻchirilgan.',
+  },
+  errorPage: {
+    title: 'Nimadir notoʻgʻri ketdi',
+    text: 'Sahifa yuklanmadi. Internet aloqasini tekshiring va sahifani yangilang.',
+    reload: 'Sahifani yangilash',
   },
 }
 

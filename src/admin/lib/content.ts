@@ -3,7 +3,8 @@ import { doc, getDoc, onSnapshot, runTransaction, serverTimestamp, setDoc } from
 import { DEFAULT_CONTENT } from '../../content/defaults'
 import { normalizeListDoc, normalizeSettings } from '../../content/normalize'
 import type { ContentKey, ListKey, SiteContent, SiteSettings } from '../../content/types'
-import { currentEditor, getDb } from './firebase'
+import { getDb } from './firebase'
+import { mergeEdits } from './merge'
 
 export interface ContentDocState<K extends ContentKey> {
   data: SiteContent[K]
@@ -47,11 +48,20 @@ export function useContentDoc<K extends ContentKey>(key: K): ContentDocState<K> 
   return state
 }
 
-export async function saveSettings(settings: SiteSettings) {
-  await setDoc(doc(getDb(), 'content', 'settings'), {
-    ...settings,
-    updatedAt: serverTimestamp(),
-    updatedBy: currentEditor(),
+/**
+ * Saves the settings form: the fields changed since `base` (what the form was opened with) are
+ * written over the stored version, which keeps changes made meanwhile elsewhere to other fields.
+ * Resolves with the settings as stored.
+ */
+export async function saveSettings(base: SiteSettings, draft: SiteSettings): Promise<SiteSettings> {
+  const db = getDb()
+  const ref = doc(db, 'content', 'settings')
+  return runTransaction(db, async (tx) => {
+    const snapshot = await tx.get(ref)
+    const current = snapshot.exists() ? normalize('settings', snapshot.data()) : DEFAULT_CONTENT.settings
+    const next = mergeEdits(current, base, draft)
+    tx.set(ref, { ...next, updatedAt: serverTimestamp() })
+    return next
   })
 }
 
@@ -68,7 +78,7 @@ export async function mutateList<K extends ListKey>(
   await runTransaction(db, async (tx) => {
     const snapshot = await tx.get(ref)
     const current = snapshot.exists() ? normalize(key, snapshot.data()) : DEFAULT_CONTENT[key]
-    tx.set(ref, { items: mutate(current), updatedAt: serverTimestamp(), updatedBy: currentEditor() })
+    tx.set(ref, { items: mutate(current), updatedAt: serverTimestamp() })
   })
 }
 
@@ -99,8 +109,8 @@ export async function saveMissingDefaults(): Promise<ContentKey[]> {
     const ref = doc(db, 'content', key)
     const snapshot = await getDoc(ref)
     if (snapshot.exists()) continue
-    const meta = { updatedAt: serverTimestamp(), updatedBy: currentEditor() }
-    await setDoc(ref, key === 'settings' ? { ...DEFAULT_CONTENT.settings, ...meta } : { items: DEFAULT_CONTENT[key], ...meta })
+    const updatedAt = serverTimestamp()
+    await setDoc(ref, key === 'settings' ? { ...DEFAULT_CONTENT.settings, updatedAt } : { items: DEFAULT_CONTENT[key], updatedAt })
     created.push(key)
   }
   return created

@@ -31,8 +31,10 @@ export function GalleryPage() {
     try {
       await mutateList('gallery', mutate)
       if (success) toast.success(success)
+      return true
     } catch (e) {
       toast.error(errorMessage(e))
+      return false
     }
   }
 
@@ -118,9 +120,11 @@ export function GalleryPage() {
                     className="a-input"
                     value={image.category}
                     aria-label="Категория"
-                    onChange={(e) =>
-                      change((items) => items.map((g) => (g.id === image.id ? { ...g, category: e.target.value as GalleryCategory } : g)))
-                    }
+                    onChange={(e) => {
+                      // Read the value now: the transaction runs later, after React has reset the select.
+                      const category = e.target.value as GalleryCategory
+                      void change((items) => items.map((g) => (g.id === image.id ? { ...g, category } : g)))
+                    }}
                   >
                     {GALLERY_CATEGORIES.map((c) => (
                       <option key={c} value={c}>
@@ -176,8 +180,7 @@ export function GalleryPage() {
             image={editing}
             onClose={() => setEditing(null)}
             onSave={async (image) => {
-              await change((items) => upsertItem(items, image), 'Подпись сохранена')
-              setEditing(null)
+              if (await change((items) => upsertItem(items, image), 'Подпись сохранена')) setEditing(null)
             }}
           />
         )}

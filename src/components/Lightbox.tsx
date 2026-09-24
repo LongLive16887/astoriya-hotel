@@ -19,6 +19,7 @@ interface LightboxProps {
 export function Lightbox({ images, index, onChange }: LightboxProps) {
   const { t } = useTranslation()
   const touchStart = useRef<number | null>(null)
+  const pressedOnStage = useRef(false)
   const open = index !== null && images.length > 0
   const current = open ? images[Math.min(index, images.length - 1)] : null
   const count = images.length
@@ -43,8 +44,11 @@ export function Lightbox({ images, index, onChange }: LightboxProps) {
       {current && index !== null && (
         <div
           className="lightbox__stage"
+          onPointerDown={(event) => {
+            pressedOnStage.current = event.target === event.currentTarget
+          }}
           onClick={(event) => {
-            if (event.target === event.currentTarget) onChange(null)
+            if (event.target === event.currentTarget && pressedOnStage.current) onChange(null)
           }}
           onTouchStart={(event) => {
             touchStart.current = event.touches[0].clientX

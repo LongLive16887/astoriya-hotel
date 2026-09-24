@@ -3,13 +3,41 @@ import { ArrowDown, ArrowUp, Pencil, Plus, Sparkles, Trash2, X } from 'lucide-re
 import { Dialog } from '../../components/Dialog'
 import { SERVICE_ICON_COMPONENTS } from '../../components/icons'
 import { emptyLocalized, tr } from '../../content/localized'
-import { SERVICE_ICONS, type Service } from '../../content/types'
+import { SERVICE_ICONS, type Service, type ServiceIcon } from '../../content/types'
 import { uniqueId } from '../../lib/ids'
 import { errorMessage, useConfirm, useToast } from '../components/feedback'
 import { LocalizedField } from '../components/LocalizedField'
 import { DefaultsNotice, EmptyState, PageHeader, Spinner } from '../components/PageHeader'
 import { Switch } from '../components/Switch'
 import { moveItem, mutateList, removeItem, upsertItem, useContentDoc } from '../lib/content'
+
+/** What each icon depicts: read out by screen readers and shown on hover. */
+const ICON_LABELS: Record<ServiceIcon, string> = {
+  waves: 'Волны',
+  flame: 'Огонь',
+  droplets: 'Капли',
+  utensils: 'Столовые приборы',
+  coffee: 'Кофе',
+  sunset: 'Закат',
+  concierge: 'Звонок на ресепшн',
+  clock: 'Часы',
+  currency: 'Деньги',
+  wifi: 'Wi-Fi',
+  trees: 'Деревья',
+  car: 'Автомобиль',
+  plane: 'Самолёт',
+  shirt: 'Рубашка',
+  baby: 'Ребёнок',
+  dumbbell: 'Гантель',
+  bath: 'Ванна',
+  key: 'Ключ',
+  map: 'Карта',
+  luggage: 'Чемодан',
+  shield: 'Щит',
+  heart: 'Сердце',
+  star: 'Звезда',
+  sparkles: 'Блеск',
+}
 
 export function ServicesPage() {
   const { data: services, exists, loading } = useContentDoc('services')
@@ -21,8 +49,10 @@ export function ServicesPage() {
     try {
       await mutateList('services', mutate)
       if (success) toast.success(success)
+      return true
     } catch (e) {
       toast.error(errorMessage(e))
+      return false
     }
   }
 
@@ -105,8 +135,7 @@ export function ServicesPage() {
             onClose={() => setEditing(null)}
             onSave={async (service) => {
               const id = service.id || uniqueId(service.title.en || service.title.ru || service.title.uz, services.map((s) => s.id))
-              await change((items) => upsertItem(items, { ...service, id }), service.id ? 'Услуга сохранена' : 'Услуга добавлена')
-              setEditing(null)
+              if (await change((items) => upsertItem(items, { ...service, id }), service.id ? 'Услуга сохранена' : 'Услуга добавлена')) setEditing(null)
             }}
           />
         )}
@@ -144,7 +173,14 @@ function ServiceForm({ initial, onClose, onSave }: { initial: Service; onClose: 
           {SERVICE_ICONS.map((icon) => {
             const Icon = SERVICE_ICON_COMPONENTS[icon]
             return (
-              <button key={icon} type="button" aria-pressed={service.icon === icon} aria-label={icon} onClick={() => setService((s) => ({ ...s, icon }))}>
+              <button
+                key={icon}
+                type="button"
+                aria-pressed={service.icon === icon}
+                aria-label={ICON_LABELS[icon]}
+                title={ICON_LABELS[icon]}
+                onClick={() => setService((s) => ({ ...s, icon }))}
+              >
                 <Icon size={22} />
               </button>
             )

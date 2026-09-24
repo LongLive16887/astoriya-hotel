@@ -362,6 +362,12 @@
   color: var(--muted);
 }
 
+.news-page__more {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
 @media (max-width: 960px) {
   .room-page__layout {
     grid-template-columns: 1fr;

@@ -5,6 +5,8 @@ export type AuthState =
   | { status: 'loading' }
   | { status: 'signed-out' }
   | { status: 'signed-in'; user: User; isAdmin: boolean }
+  /** The access check itself failed (no connection, rules not published): not the same as no access. */
+  | { status: 'check-failed'; user: User; code: string; retry: () => void }
 
 export const AuthContext = createContext<AuthState>({ status: 'loading' })
 

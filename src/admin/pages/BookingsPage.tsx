@@ -4,7 +4,7 @@ import { Download, Inbox, Search } from 'lucide-react'
 import { BOOKING_STATUSES, type BookingStatus } from '../../content/types'
 import { EmptyState, PageHeader, Spinner } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
-import { bookingsToCsv, useBookings, type Booking } from '../lib/bookings'
+import { bookingsToCsv, useBooking, useBookings, type Booking } from '../lib/bookings'
 import { formatDateTime, guestsLabel, stayLabel } from '../lib/format'
 import { BookingDrawer } from './BookingDrawer'
 
@@ -41,7 +41,10 @@ export function BookingsPage() {
   const statusParam = params.get('status')
   const tab: Tab = statusParam && (BOOKING_STATUSES as readonly string[]).includes(statusParam) ? (statusParam as BookingStatus) : statusParam === 'all' ? 'all' : 'new'
   const openId = params.get('id')
-  const open = bookings.find((b) => b.id === openId) ?? null
+  const listed = bookings.find((b) => b.id === openId)
+  // Links from the dashboard may point to a request older than the loaded list.
+  const fetched = useBooking(!loading && openId && !listed ? openId : null)
+  const open = listed ?? fetched
 
   const counts = Object.fromEntries(TABS.map((t) => [t.key, t.key === 'all' ? bookings.length : bookings.filter((b) => b.status === t.key).length]))
   const shown = bookings.filter((b) => (tab === 'all' || b.status === tab) && matches(b, query.trim()))
@@ -137,7 +140,14 @@ export function BookingsPage() {
                     <span className="a-cell-muted">{formatDateTime(b.createdAt)}</span>
                   </td>
                   <td>
-                    <button type="button" className="a-cell-strong a-link-button" onClick={() => setParam('id', b.id)}>
+                    <button
+                      type="button"
+                      className="a-cell-strong a-link-button"
+                      onClick={(event) => {
+                        event.stopPropagation() // the row would open it a second time
+                        setParam('id', b.id)
+                      }}
+                    >
                       {b.name}
                     </button>
                     <span className="a-cell-muted">{b.phone}</span>

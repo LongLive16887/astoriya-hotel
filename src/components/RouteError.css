@@ -1,0 +1,30 @@
+.route-error {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 20px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 48px 16px;
+  text-align: center;
+  background: var(--ivory);
+}
+
+.route-error__arch {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 160px;
+  margin-bottom: 8px;
+  background: var(--green-800);
+  color: var(--brass-light);
+}
+
+.route-error__arch svg {
+  width: 52px;
+  margin-top: 20px;
+}
+
+.route-error .lead {
+  max-width: 34rem;
+}

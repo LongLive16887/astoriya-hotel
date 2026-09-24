@@ -39,8 +39,16 @@ export function safeHref(url: string): string {
   return '#'
 }
 
+const GOOGLE_HOST = /^(www\.|maps\.)?google\.(com|[a-z]{2}|com?\.[a-z]{2})$/i
+
 /** Only Google Maps embeds are allowed in the map iframe. */
 export function safeMapEmbed(url: string): string | null {
-  const value = url.trim()
-  return /^https:\/\/(www\.)?google\.[a-z.]+\/maps\/embed/i.test(value) ? value : null
+  let parsed: URL
+  try {
+    parsed = new URL(url.trim())
+  } catch {
+    return null
+  }
+  const ok = parsed.protocol === 'https:' && GOOGLE_HOST.test(parsed.hostname) && parsed.pathname.startsWith('/maps/embed')
+  return ok ? parsed.href : null
 }

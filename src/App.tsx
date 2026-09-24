@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { RouteError } from './components/RouteError'
 import { Splash } from './components/Splash'
 import { ContentProvider } from './content/ContentProvider'
 import { SiteLayout } from './site/layout/SiteLayout'
@@ -20,6 +21,8 @@ const router = createBrowserRouter([
         <AdminApp />
       </Suspense>
     ),
+    // The admin panel is in Russian whatever language the site was last shown in.
+    errorElement: <RouteError lang="ru" />,
   },
   {
     element: (
@@ -27,6 +30,7 @@ const router = createBrowserRouter([
         <SiteLayout />
       </ContentProvider>
     ),
+    errorElement: <RouteError />,
     children: [
       { index: true, element: <HomePage /> },
       { path: 'rooms/:roomId', element: <RoomPage /> },

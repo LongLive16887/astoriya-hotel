@@ -3,6 +3,7 @@ import {
   collection,
   connectFirestoreEmulator,
   doc,
+  documentId,
   getDoc,
   getDocs,
   getFirestore,
@@ -10,6 +11,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  startAfter,
   where,
   type Firestore,
 } from 'firebase/firestore/lite'
@@ -44,11 +46,23 @@ export async function fetchContentDocs(): Promise<Partial<Record<ContentKey, unk
   return docs
 }
 
-export async function fetchPublishedPosts(max = 24): Promise<Post[]> {
+/**
+ * Published posts, newest first, `max` at a time; pass the last post of the previous page
+ * as `after` to get the next one.
+ */
+export async function fetchPublishedPosts(max: number, after?: Post): Promise<Post[]> {
   const posts = collection(liteDb(), 'posts')
   try {
+    // Posts from the same day are ordered by id, so the next page starts exactly after `after`.
     const snapshot = await getDocs(
-      query(posts, where('published', '==', true), orderBy('date', 'desc'), limit(max)),
+      query(
+        posts,
+        where('published', '==', true),
+        orderBy('date', 'desc'),
+        orderBy(documentId(), 'desc'),
+        ...(after ? [startAfter(after.date, after.id)] : []),
+        limit(max),
+      ),
     )
     return snapshot.docs.map((d) => normalizePost(d.id, d.data()))
   } catch (error) {
@@ -56,10 +70,11 @@ export async function fetchPublishedPosts(max = 24): Promise<Post[]> {
     // fall back to sorting on the client so the news still show up.
     if (errorCode(error) !== 'failed-precondition') throw error
     const snapshot = await getDocs(query(posts, where('published', '==', true)))
-    return snapshot.docs
+    const sorted = snapshot.docs
       .map((d) => normalizePost(d.id, d.data()))
-      .sort((a, b) => b.date.localeCompare(a.date))
-      .slice(0, max)
+      .sort((a, b) => b.date.localeCompare(a.date) || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0))
+    const start = after ? sorted.findIndex((p) => p.id === after.id) + 1 : 0
+    return sorted.slice(start, start + max)
   }
 }
 

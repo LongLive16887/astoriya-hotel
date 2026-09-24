@@ -155,12 +155,12 @@ export const DEFAULT_CONTENT: SiteContent = {
       visible: true,
       name: { uz: 'Oilaviy xona', ru: 'Семейный номер', en: 'Family Room' },
       summary: {
-        uz: 'Toʻrt kishigacha oila uchun yotoqxona va mehmonxona qismi',
+        uz: 'Toʻrt kishigacha oila uchun yotoqxona va yashash xonasi',
         ru: 'Спальня и гостиная зона для семьи до четырёх человек',
         en: 'A bedroom and a lounge area for a family of up to four',
       },
       description: {
-        uz: 'Shisha eshiklar bilan ajratilgan ikki qism: yotoqxona hamda qoʻshimcha karavot va kreslolar joylashgan mehmonxona qismi. Toʻrt kishigacha boʻlgan oila uchun qulay.\n\nKonditsioner, yassi ekranli televizor, kiyim javoni, mini-muzlatgich, choynak va seyf; dush va bepul gigiyena vositalari bilan shaxsiy hammom. “Shved stoli” nonushtasi narxga kiritilgan.',
+        uz: 'Shisha eshiklar bilan ajratilgan ikki qism: yotoqxona hamda qoʻshimcha karavot va kreslolar joylashgan yashash xonasi. Toʻrt kishigacha boʻlgan oila uchun qulay.\n\nKonditsioner, yassi ekranli televizor, kiyim javoni, mini-muzlatgich, choynak va seyf; dush va bepul gigiyena vositalari bilan shaxsiy hammom. “Shved stoli” nonushtasi narxga kiritilgan.',
         ru: 'Два пространства, разделённые стеклянными дверями: спальня и гостиная зона с дополнительной кроватью и креслами. Удобно для семьи до четырёх человек.\n\nКондиционер, телевизор с плоским экраном, шкаф, мини-холодильник, чайник и сейф; собственная ванная комната с душем и бесплатными туалетно-косметическими принадлежностями. Завтрак «шведский стол» включён в стоимость.',
         en: 'Two spaces separated by glass doors: a bedroom and a lounge area with an extra bed and armchairs. Comfortable for a family of up to four.\n\nAir conditioning, a flat-screen TV, a wardrobe, a mini-fridge, a kettle and a safe; private bathroom with a shower and free toiletries. Buffet breakfast is included in the rate.',
       },
@@ -321,7 +321,7 @@ export const DEFAULT_CONTENT: SiteContent = {
       src: '/images/room-family-lounge.webp',
       category: 'rooms',
       caption: {
-        uz: 'Oilaviy xona — mehmonxona qismi',
+        uz: 'Oilaviy xona — yashash xonasi',
         ru: 'Семейный номер — гостиная',
         en: 'Family Room — lounge',
       },

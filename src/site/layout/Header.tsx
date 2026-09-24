@@ -8,7 +8,7 @@ import { useContent } from '../../content/context'
 import { instagramHref, telegramHref, telHref } from '../../lib/links'
 import { useOpenBooking } from '../booking/context'
 import { LanguageSwitcher } from './LanguageSwitcher'
-import { NAV_SECTIONS, sectionLink } from './nav'
+import { sectionLink, useNavSections } from './nav'
 import './Header.css'
 
 /**
@@ -19,6 +19,7 @@ export function Header({ overlay }: { overlay: boolean }) {
   const { t } = useTranslation()
   const { settings } = useContent()
   const openBooking = useOpenBooking()
+  const sections = useNavSections()
   const location = useLocation()
   const [scrolled, setScrolled] = useState(() => window.scrollY > 24)
   // The menu belongs to the page it was opened on, so any navigation closes it.
@@ -56,7 +57,7 @@ export function Header({ overlay }: { overlay: boolean }) {
         </Link>
 
         <nav className="site-header__nav" aria-label={t('a11y.mainNav')}>
-          {NAV_SECTIONS.map((item) => (
+          {sections.map((item) => (
             <Link key={item.id} to={sectionLink(item.id)} className="site-header__link">
               {t(item.label)}
             </Link>
@@ -88,7 +89,7 @@ export function Header({ overlay }: { overlay: boolean }) {
       <div id="mobile-menu" className="mobile-menu" hidden={!menuOpen}>
         <div className="container mobile-menu__inner">
           <nav className="mobile-menu__nav" aria-label={t('a11y.mainNav')}>
-            {NAV_SECTIONS.map((item, i) => (
+            {sections.map((item, i) => (
               <Link
                 key={item.id}
                 to={sectionLink(item.id)}

@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next'
-import { usePosts } from '../../content/usePosts'
+import { usePostPages } from '../../content/usePosts'
 import { PostCard } from '../sections/PostCard'
 import { useDocumentMeta } from '../useDocumentMeta'
 import './pages.css'
 
 export function NewsPage() {
   const { t } = useTranslation()
-  const posts = usePosts()
+  const { posts, hasMore, loading, loadMore } = usePostPages()
   useDocumentMeta(t('news.pageTitle'), t('news.pageSubtitle'))
 
   return (
@@ -28,11 +28,20 @@ export function NewsPage() {
         ) : posts.length === 0 ? (
           <p className="news-page__empty">{t('news.empty')}</p>
         ) : (
-          <div className="posts-grid">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
+          <>
+            <div className="posts-grid">
+              {posts.map((post) => (
+                <PostCard key={post.id} post={post} headingLevel={2} />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="news-page__more">
+                <button type="button" className="btn btn--outline" onClick={loadMore} disabled={loading}>
+                  {loading ? t('news.loadingMore') : t('news.more')}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>

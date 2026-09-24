@@ -17,6 +17,10 @@ const en: Dict = {
     mainNav: 'Main menu',
     photo: 'Photo {{n}} of {{total}}',
     openPhoto: 'Open photo: {{caption}}',
+    prevReview: 'Previous review',
+    nextReview: 'Next review',
+    breadcrumb: 'Breadcrumb',
+    loading: 'Loading',
   },
   nav: {
     about: 'About',
@@ -55,7 +59,6 @@ const en: Dict = {
     children_one: '{{count}} child',
     children_other: '{{count}} children',
     perNight: 'per night',
-    fromPrice: 'from {{price}}',
     area: '{{value}} m²',
   },
   hero: {
@@ -128,7 +131,7 @@ const en: Dict = {
       spa: 'SPA',
       terrace: 'Terrace',
       exterior: 'Hotel',
-      other: 'More',
+      other: 'Other',
     },
   },
   reviews: {
@@ -147,6 +150,8 @@ const en: Dict = {
     notFound: 'Post not found',
     notFoundText: 'It may have been removed or not published yet.',
     empty: 'No news yet.',
+    more: 'Show more',
+    loadingMore: 'Loading…',
   },
   location: {
     eyebrow: 'Contacts',
@@ -197,6 +202,8 @@ const en: Dict = {
     errorTitle: 'Could not send the request',
     errorText: 'Check your internet connection and try again — or message us on Telegram.',
     unavailable: 'Online requests are temporarily unavailable. Send us your request on Telegram or give us a call.',
+    errorTextCall: 'Check your internet connection and try again — or give us a call.',
+    unavailableCall: 'Online requests are temporarily unavailable. Give us a call and we will help you choose a room.',
     copyAndOpen: 'Send via Telegram',
     copied: 'The request text is copied — paste it into the chat with the hotel.',
     requestText:
@@ -220,6 +227,11 @@ const en: Dict = {
   notFound: {
     title: 'Page not found',
     text: 'It may have been moved or deleted.',
+  },
+  errorPage: {
+    title: 'Something went wrong',
+    text: 'The page did not load. Check your internet connection and reload the page.',
+    reload: 'Reload page',
   },
 }
 

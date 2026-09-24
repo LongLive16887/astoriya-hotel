@@ -11,6 +11,7 @@ import { useContent } from '../../content/context'
 import { paragraphs, tr } from '../../content/localized'
 import type { Room } from '../../content/types'
 import { useLang } from '../../i18n/useLang'
+import { BOOKING_LIMITS } from '../../lib/booking'
 import { addDaysIso, formatUsd, formatUzs, todayIso } from '../../lib/format'
 import { telegramHref, telHref } from '../../lib/links'
 import { useOpenBooking } from '../booking/context'
@@ -53,7 +54,9 @@ function RoomDetails({ room, others }: { room: Room; others: Room[] }) {
   const [lightbox, setLightbox] = useState<number | null>(null)
   const [checkIn, setCheckIn] = useState('')
   const [checkOut, setCheckOut] = useState('')
-  const [adults, setAdults] = useState(Math.min(2, Math.max(1, room.guests)))
+  // A request can book at most BOOKING_LIMITS.maxAdults adults, even for a bigger room.
+  const maxAdults = Math.max(1, Math.min(room.guests, BOOKING_LIMITS.maxAdults))
+  const [adults, setAdults] = useState(Math.min(2, maxAdults))
   const today = todayIso()
 
   const name = tr(room.name, lang)
@@ -69,7 +72,7 @@ function RoomDetails({ room, others }: { room: Room; others: Room[] }) {
   return (
     <article className="page room-page">
       <div className="container">
-        <nav className="breadcrumbs" aria-label="Breadcrumb">
+        <nav className="breadcrumbs" aria-label={t('a11y.breadcrumb')}>
           <Link to="/">{settings.hotelName}</Link>
           <span aria-hidden="true">/</span>
           <Link to={sectionLink('rooms')}>{t('nav.rooms')}</Link>
@@ -191,7 +194,7 @@ function RoomDetails({ room, others }: { room: Room; others: Room[] }) {
                     value={adults}
                     onChange={(e) => setAdults(Number(e.target.value))}
                   >
-                    {Array.from({ length: Math.max(room.guests, 1) }, (_, i) => i + 1).map((n) => (
+                    {Array.from({ length: maxAdults }, (_, i) => i + 1).map((n) => (
                       <option key={n} value={n}>
                         {t('units.adults', { count: n })}
                       </option>
