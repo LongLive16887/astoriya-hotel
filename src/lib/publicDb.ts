@@ -16,7 +16,8 @@ import {
 import { normalizePost } from '../content/normalize'
 import type { BookingRequest, ContentKey, Post } from '../content/types'
 import { cleanBooking } from './booking'
-import { EMULATOR_HOST, EMULATOR_PORTS, errorCode, getFirebaseApp, useFirebaseEmulators } from './firebase'
+import { getFirebaseApp } from './firebase'
+import { EMULATOR_HOST, EMULATOR_PORTS, errorCode, useFirebaseEmulators } from './firebaseConfig'
 
 // The public site only reads content and creates booking requests, so it uses the
 // lightweight Firestore Lite SDK. The admin panel uses the full SDK (realtime updates).

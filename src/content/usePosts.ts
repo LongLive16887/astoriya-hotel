@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { readCache, writeCache } from '../lib/cache'
-import { isFirebaseConfigured } from '../lib/firebase'
-import { fetchPublishedPosts } from '../lib/publicDb'
+import { isFirebaseConfigured, loadPublicDb } from '../lib/firebaseConfig'
 import { DEFAULT_POSTS } from './defaults'
 import { normalizePost } from './normalize'
 import type { Post } from './types'
@@ -12,10 +11,12 @@ const CACHE_KEY = 'posts'
 let request: Promise<Post[]> | null = null
 
 function loadPosts(): Promise<Post[]> {
-  request ??= fetchPublishedPosts().then((posts) => {
-    writeCache(CACHE_KEY, posts)
-    return posts
-  })
+  request ??= loadPublicDb()
+    .then((db) => db.fetchPublishedPosts())
+    .then((posts) => {
+      writeCache(CACHE_KEY, posts)
+      return posts
+    })
   return request
 }
 

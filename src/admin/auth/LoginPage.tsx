@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth'
 import { ArrowLeft } from 'lucide-react'
 import { LogoMark } from '../../components/Logo'
-import { errorCode } from '../../lib/firebase'
+import { errorCode } from '../../lib/firebaseConfig'
 import { getAdminAuth } from '../lib/firebase'
 
 const AUTH_ERRORS: Record<string, string> = {

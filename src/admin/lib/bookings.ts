@@ -143,12 +143,18 @@ const CSV_COLUMNS: [string, (b: Booking) => string | number][] = [
   ['Язык', (b) => b.lang],
 ]
 
-/** CSV that opens correctly in Excel (BOM, semicolons, quoted cells). */
+/**
+ * CSV that opens correctly in Excel (BOM, semicolons, quoted cells). Guests type the values,
+ * so text that Excel would treat as a formula (=, +, -, @) is prefixed with an apostrophe.
+ */
 export function bookingsToCsv(bookings: Booking[]): string {
-  const cell = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`
+  const cell = (value: string | number) => {
+    const text = typeof value === 'string' && /^[=+\-@\t\r]/.test(value) ? `'${value}` : String(value)
+    return `"${text.replace(/"/g, '""')}"`
+  }
   const rows = [
     CSV_COLUMNS.map(([title]) => cell(title)).join(';'),
     ...bookings.map((b) => CSV_COLUMNS.map(([, get]) => cell(get(b))).join(';')),
   ]
-  return '﻿' + rows.join('\r\n')
+  return '\ufeff' + rows.join('\r\n')
 }

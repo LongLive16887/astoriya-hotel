@@ -1,7 +1,8 @@
 import { connectAuthEmulator, getAuth, type Auth } from 'firebase/auth'
 import { connectFirestoreEmulator, initializeFirestore, type Firestore } from 'firebase/firestore'
 import { connectStorageEmulator, getStorage, type FirebaseStorage } from 'firebase/storage'
-import { EMULATOR_HOST, EMULATOR_PORTS, getFirebaseApp, useFirebaseEmulators } from '../../lib/firebase'
+import { getFirebaseApp } from '../../lib/firebase'
+import { EMULATOR_HOST, EMULATOR_PORTS, useFirebaseEmulators } from '../../lib/firebaseConfig'
 
 // Full Firebase SDKs for the admin panel (realtime updates, auth, uploads).
 

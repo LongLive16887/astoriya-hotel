@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { isFirebaseConfigured } from '../lib/firebase'
-import { fetchContentDocs } from '../lib/publicDb'
+import { isFirebaseConfigured, loadPublicDb } from '../lib/firebaseConfig'
 import { readCache, writeCache } from '../lib/cache'
 import { ContentContext, type ContentState } from './context'
 import { DEFAULT_CONTENT } from './defaults'
@@ -34,7 +33,8 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       if (active) setState((s) => (s.status === 'loading' ? { ...s, status: 'ready' } : s))
     }, FIRST_LOAD_TIMEOUT)
 
-    fetchContentDocs()
+    loadPublicDb()
+      .then((db) => db.fetchContentDocs())
       .then((docs) => {
         writeCache(CACHE_KEY, docs)
         if (active) setState({ content: normalizeContent(docs, DEFAULT_CONTENT), status: 'ready' })

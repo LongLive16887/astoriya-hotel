@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { isFirebaseConfigured } from '../lib/firebase'
+import { isFirebaseConfigured } from '../lib/firebaseConfig'
 import { AuthProvider } from './auth/AuthProvider'
 import { useAuthState } from './auth/context'
 import { LoginPage } from './auth/LoginPage'

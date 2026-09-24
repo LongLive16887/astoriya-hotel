@@ -21,7 +21,8 @@ export async function compressImage(file: File): Promise<Blob> {
   // Vector and animated images would lose their nature on a canvas.
   if (file.type === 'image/svg+xml' || file.type === 'image/gif') return file
 
-  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+  // Older browsers do not know the "from-image" option (they rotate by EXIF anyway).
+  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' }).catch(() => createImageBitmap(file))
   const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height))
   const width = Math.round(bitmap.width * scale)
   const height = Math.round(bitmap.height * scale)

@@ -8,10 +8,9 @@ import { tr } from '../../content/localized'
 import type { BookingRequest, Lang } from '../../content/types'
 import { useLang } from '../../i18n/useLang'
 import { validateBooking, BOOKING_LIMITS, type BookingErrors } from '../../lib/booking'
-import { isFirebaseConfigured } from '../../lib/firebase'
+import { isFirebaseConfigured, loadPublicDb } from '../../lib/firebaseConfig'
 import { addDaysIso, formatDate, formatUzs, nightsBetween, todayIso } from '../../lib/format'
 import { telegramHref, telHref } from '../../lib/links'
-import { submitBooking } from '../../lib/publicDb'
 import type { BookingPrefill } from './context'
 import './BookingDialog.css'
 
@@ -133,7 +132,8 @@ function BookingForm({ prefill, onClose }: { prefill: BookingPrefill; onClose: (
     }
     setStatus('sending')
     try {
-      await submitBooking({ ...form, roomName, lang })
+      const db = await loadPublicDb()
+      await db.submitBooking({ ...form, roomName, lang })
       setStatus('sent')
     } catch (error) {
       console.error('Booking request failed', error)

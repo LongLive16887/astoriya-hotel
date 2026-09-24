@@ -5,7 +5,7 @@ const CYRILLIC: Record<string, string> = {
   ў: 'o', қ: 'q', ғ: 'g', ҳ: 'h',
 }
 
-/** "Семейный номер" → "semeynyy-nomer", "Oʻzbek xona" → "ozbek-xona" */
+/** "Семейный номер" → "semeynyy-nomer", "Oʻzbek xona №1" → "ozbek-xona-no1" */
 export function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -13,7 +13,8 @@ export function slugify(text: string): string {
     .map((ch) => CYRILLIC[ch] ?? ch)
     .join('')
     .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[ʻʼ'‘’`]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')

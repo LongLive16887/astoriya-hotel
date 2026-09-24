@@ -55,6 +55,11 @@ export function AdminLayout() {
   )
   const newBookings = useNewBookings(onNewBooking)
 
+  // Each section starts at the top (search params like ?status= keep the position).
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [location.pathname])
+
   // Show the number of unhandled requests in the browser tab.
   useEffect(() => {
     const count = newBookings.length
