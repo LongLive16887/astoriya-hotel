@@ -66,7 +66,7 @@ export function Gallery() {
                   onClick={() => setOpenIndex(i)}
                   aria-label={t('a11y.openPhoto', { caption: caption || String(i + 1) })}
                 >
-                  <Img src={image.src} alt="" />
+                  <Img src={image.src} alt="" sizes="(max-width: 760px) 92vw, 40vw" />
                   <span className="gallery__overlay" aria-hidden="true">
                     {caption && <span className="gallery__caption">{caption}</span>}
                     <Expand size={18} />

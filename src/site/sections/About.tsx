@@ -19,7 +19,7 @@ export function About() {
       <div className="container about__inner">
         <div className="about__media reveal">
           <div className="about__main frame">
-            <Img src={about.image} alt="" width={1024} height={768} />
+            <Img src={about.image} alt="" width={1024} height={768} sizes="(max-width: 900px) 90vw, 480px" />
           </div>
           {about.secondaryImage && (
             <div className="about__second arch">

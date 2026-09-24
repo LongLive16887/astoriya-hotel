@@ -88,7 +88,7 @@ export function PostPage() {
         </header>
         {post.image && (
           <div className="post-page__cover">
-            <Img src={post.image} alt="" loading="eager" />
+            <Img src={post.image} alt="" loading="eager" sizes="(max-width: 860px) 92vw, 820px" />
           </div>
         )}
         <div className="prose post-page__body">

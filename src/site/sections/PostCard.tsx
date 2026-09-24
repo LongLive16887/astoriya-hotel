@@ -18,7 +18,7 @@ export function PostCard({ post }: { post: Post }) {
     <article className="post-card reveal">
       <div className="post-card__media">
         {post.image ? (
-          <Img src={post.image} alt="" />
+          <Img src={post.image} alt="" sizes="(max-width: 720px) 92vw, 400px" />
         ) : (
           <span className="post-card__placeholder">
             <LogoMark />

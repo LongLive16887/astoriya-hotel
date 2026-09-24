@@ -262,7 +262,7 @@ function RoomGallery({ images, onOpen }: { images: string[]; onOpen: (index: num
           onClick={() => onOpen(i)}
           aria-label={t('a11y.photo', { n: i + 1, total: images.length })}
         >
-          <Img src={src} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
+          <Img src={src} alt="" loading={i === 0 ? 'eager' : 'lazy'} sizes="(max-width: 640px) 86vw, 66vw" />
           {i === shown.length - 1 && hidden > 0 && (
             <span className="room-gallery__more">
               <Images size={18} /> +{hidden}

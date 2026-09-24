@@ -28,7 +28,7 @@ export function RoomCard({ room }: { room: Room }) {
       <div className="room-card__media">
         {current ? (
           <Link to={href} tabIndex={-1} aria-hidden="true">
-            <Img key={current} src={current} alt="" />
+            <Img key={current} src={current} alt="" sizes="(max-width: 720px) 92vw, (max-width: 1100px) 46vw, 400px" />
           </Link>
         ) : (
           <div className="room-card__placeholder">
