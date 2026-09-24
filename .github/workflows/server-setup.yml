@@ -69,11 +69,18 @@ jobs:
         run: |
           . deploy/config.env
           if [ "${SETUP_MODE:-inspect}" != install ]; then exit 0; fi
+          host="$(printf '%s' "${VPS_HOST:-$SERVER_HOST}" | tr -d '[:space:]')"
           if [ -z "$DOMAIN" ]; then
             # Other sites on the server may answer on its address, so only the site's own reply counts.
-            host="$(printf '%s' "${VPS_HOST:-$SERVER_HOST}" | tr -d '[:space:]')"
             if curl -fsS --max-time 20 "http://$host/api/health" 2>/dev/null | grep -q '"version"'; then echo "The site answers on http://$host"
             else echo "::notice::The site is installed and running on the server. It is published once DOMAIN is set in deploy/config.env."; fi
+            exit 0
+          fi
+          # Until the domain's DNS points to the server, the site cannot be reached through it.
+          server_ips="$(getent ahostsv4 "$host" | awk '{print $1}' | sort -u)"
+          domain_ips="$(getent ahostsv4 "$DOMAIN" | awk '{print $1}' | sort -u)"
+          if [ -z "$domain_ips" ] || [ -n "$(comm -23 <(echo "$domain_ips") <(echo "$server_ips"))" ]; then
+            echo "::warning::$DOMAIN does not point to the server yet (DNS gives: $(echo $domain_ips)). The site is set up for it; once DNS points here, run this workflow again for the HTTPS certificate."
             exit 0
           fi
           for i in $(seq 1 12); do
