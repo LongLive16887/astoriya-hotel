@@ -8,7 +8,7 @@ User=astoria
 Group=astoria
 EnvironmentFile=/etc/astoria/astoria.env
 WorkingDirectory=/opt/astoria/current
-ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning /opt/astoria/current/server/index.mjs
+ExecStart=/opt/astoria/node/bin/node --disable-warning=ExperimentalWarning /opt/astoria/current/server/index.mjs
 Restart=always
 RestartSec=3
 # The database and backups are readable by the service user only.
