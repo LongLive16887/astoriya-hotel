@@ -1,0 +1,50 @@
+:root {
+  /* Palette taken from the hotel itself: sand brick, emerald velvet, brass fittings. */
+  --ivory: #f7f2ea;
+  --ivory-2: #fcf9f4;
+  --sand: #efe6d8;
+  --sand-2: #e4d6bf;
+  --ink: #1d1c19;
+  --ink-2: #45413a;
+  --muted: #6b6356;
+  --green-950: #0d1d19;
+  --green-900: #11241f;
+  --green-800: #173029;
+  --green-700: #1f3b33;
+  --green-600: #2b4d43;
+  --brass: #b08a55;
+  --brass-light: #d4b688;
+  --brass-dark: #7d5f35;
+  --line: rgb(29 28 25 / 0.12);
+  --line-strong: rgb(29 28 25 / 0.28);
+  --line-light: rgb(247 242 234 / 0.14);
+  --on-dark: rgb(247 242 234 / 0.74);
+  --danger: #a4302a;
+  --danger-bg: #fbeceb;
+  --success: #2f6b4f;
+  --success-bg: #e8f3ec;
+
+  --font-serif: 'Cormorant Garamond Variable', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Manrope Variable', 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgb(17 36 31 / 0.06), 0 2px 8px rgb(17 36 31 / 0.05);
+  --shadow: 0 14px 40px -16px rgb(17 36 31 / 0.22);
+  --shadow-lg: 0 32px 70px -24px rgb(17 36 31 / 0.4);
+
+  --container: 1240px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --section-y: clamp(72px, 9vw, 128px);
+  --header-h: 76px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (max-width: 720px) {
+  :root {
+    --header-h: 64px;
+  }
+}

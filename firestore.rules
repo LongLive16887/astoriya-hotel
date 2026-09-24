@@ -1,0 +1,77 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // An admin is a signed-in user whose UID has a document in /admins.
+    // Those documents are created by hand in the Firebase console (see README).
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isText(value, min, max) {
+      return value is string && value.size() >= min && value.size() <= max;
+    }
+
+    function isIsoDate(value) {
+      return value is string && value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function toTimestamp(isoDate) {
+      return timestamp.date(int(isoDate[0:4]), int(isoDate[5:7]), int(isoDate[8:10]));
+    }
+
+    // Mirrors validateBooking() in src/lib/booking.ts.
+    function isValidBookingRequest(d) {
+      return d.keys().hasOnly(['name', 'phone', 'email', 'checkIn', 'checkOut', 'adults',
+                               'children', 'roomId', 'roomName', 'message', 'lang',
+                               'status', 'createdAt'])
+        && d.keys().hasAll(['name', 'phone', 'checkIn', 'checkOut', 'adults', 'children',
+                            'status', 'createdAt'])
+        && d.status == 'new'
+        && d.createdAt == request.time
+        && isText(d.name, 2, 100)
+        && isText(d.phone, 7, 30)
+        && (!('email' in d) || isText(d.email, 0, 120))
+        && (!('roomId' in d) || isText(d.roomId, 0, 80))
+        && (!('roomName' in d) || isText(d.roomName, 0, 120))
+        && (!('message' in d) || isText(d.message, 0, 1000))
+        && (!('lang' in d) || d.lang in ['uz', 'ru', 'en'])
+        && d.adults is int && d.adults >= 1 && d.adults <= 10
+        && d.children is int && d.children >= 0 && d.children <= 10
+        && isIsoDate(d.checkIn) && isIsoDate(d.checkOut)
+        // Guests in any time zone may pick "today", so allow one day of slack.
+        && toTimestamp(d.checkIn) >= request.time - duration.value(2, 'd')
+        && toTimestamp(d.checkOut) > toTimestamp(d.checkIn)
+        && toTimestamp(d.checkOut) <= toTimestamp(d.checkIn) + duration.value(60, 'd');
+    }
+
+    // Site content edited in the admin panel: settings, rooms, services, gallery, reviews.
+    match /content/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId in ['settings', 'rooms', 'services', 'gallery', 'reviews'];
+    }
+
+    // News. Visitors can only read published posts (queries must filter on `published`).
+    match /posts/{postId} {
+      allow read: if resource.data.published == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Booking requests: anyone can send one, only admins can see and manage them.
+    match /bookings/{bookingId} {
+      allow create: if isValidBookingRequest(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Lets the admin panel check whether the signed-in user is an admin.
+    match /admins/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, write: if false;
+    }
+  }
+}

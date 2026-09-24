@@ -1,28 +1,19 @@
 /// <reference types="vite/client" />
 
-declare module '*.svg' {
-  import React = require('react')
-  export const ReactComponent: React.SFC<React.SVGProps<SVGSVGElement>>
-  const src: string
-  export default src
+interface ImportMetaEnv {
+  readonly VITE_FIREBASE_API_KEY?: string
+  readonly VITE_FIREBASE_AUTH_DOMAIN?: string
+  readonly VITE_FIREBASE_PROJECT_ID?: string
+  readonly VITE_FIREBASE_STORAGE_BUCKET?: string
+  readonly VITE_FIREBASE_MESSAGING_SENDER_ID?: string
+  readonly VITE_FIREBASE_APP_ID?: string
+  /** "true" connects to the local Firebase emulators (see README). */
+  readonly VITE_FIREBASE_EMULATORS?: string
+  /** Optional: upload admin images to Cloudinary instead of Firebase Storage. */
+  readonly VITE_CLOUDINARY_CLOUD_NAME?: string
+  readonly VITE_CLOUDINARY_UPLOAD_PRESET?: string
 }
 
-declare module '*.jpg' {
-  const src: string
-  export default src
-}
-
-declare module '*.jpeg' {
-  const src: string
-  export default src
-}
-
-declare module '*.png' {
-  const src: string
-  export default src
-}
-
-declare module '*.gif' {
-  const src: string
-  export default src
+interface ImportMeta {
+  readonly env: ImportMetaEnv
 }

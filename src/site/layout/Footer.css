@@ -1,0 +1,112 @@
+.site-footer {
+  padding-top: clamp(56px, 7vw, 88px);
+  background: var(--green-950);
+  color: var(--on-dark);
+}
+
+.site-footer__grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1.2fr;
+  gap: clamp(32px, 5vw, 72px);
+  padding-bottom: clamp(40px, 5vw, 64px);
+}
+
+.site-footer__brand {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+  color: var(--ivory);
+}
+
+.site-footer__brand p {
+  max-width: 22rem;
+  color: var(--on-dark);
+}
+
+.site-footer__social {
+  display: flex;
+  gap: 10px;
+}
+
+.site-footer__social a {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line-light);
+  border-radius: 50%;
+  color: var(--ivory);
+  transition:
+    border-color 0.25s var(--ease),
+    color 0.25s var(--ease);
+}
+
+.site-footer__social a:hover {
+  border-color: var(--brass-light);
+  color: var(--brass-light);
+}
+
+.site-footer__title {
+  margin-bottom: 18px;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brass-light);
+}
+
+.site-footer__col ul {
+  display: grid;
+  gap: 10px;
+}
+
+.site-footer__col a {
+  transition: color 0.2s var(--ease);
+}
+
+.site-footer__col a:hover {
+  color: var(--ivory);
+}
+
+.site-footer__contacts li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.site-footer__contacts svg {
+  flex: none;
+  margin-top: 4px;
+  color: var(--brass-light);
+}
+
+.site-footer__bottom {
+  padding-block: 24px;
+  border-top: 1px solid var(--line-light);
+  font-size: 0.82rem;
+  color: rgb(247 242 234 / 0.5);
+}
+
+@media (max-width: 860px) {
+  .site-footer__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .site-footer__brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 520px) {
+  .site-footer__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  /* Room for the fixed mobile action bar. */
+  .site-footer {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+}

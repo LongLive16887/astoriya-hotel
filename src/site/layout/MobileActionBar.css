@@ -1,0 +1,46 @@
+.action-bar {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .action-bar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    background: rgb(17 36 31 / 0.96);
+    color: var(--ivory);
+    box-shadow: 0 -8px 24px rgb(13 29 25 / 0.18);
+    backdrop-filter: blur(10px);
+    transform: translateY(110%);
+    transition: transform 0.35s var(--ease);
+  }
+
+  .action-bar.is-visible {
+    transform: none;
+  }
+
+  html.menu-open .action-bar {
+    transform: translateY(110%);
+  }
+
+  .action-bar__item {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    min-width: 72px;
+    padding: 6px 8px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--on-dark);
+  }
+
+  .action-bar__book {
+    flex: 1;
+    min-height: 48px;
+  }
+}
