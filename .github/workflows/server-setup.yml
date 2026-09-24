@@ -33,7 +33,7 @@ jobs:
       VPS_PORT: ${{ secrets.VPS_PORT }}
       SERVER_SSH_PASSWORD: ${{ secrets.SERVER_SSH_PASSWORD }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Connect to the server
         run: bash deploy/ci/connect.sh
@@ -44,7 +44,7 @@ jobs:
           dir="$(server-put deploy/server/inspect.sh deploy/server/bootstrap.pub)"
           server-ssh "bash $dir/inspect.sh $dir/bootstrap.pub; rm -rf $dir"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
