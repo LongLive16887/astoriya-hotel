@@ -114,6 +114,16 @@ describe('public API', () => {
     expect(form.status).toBe(415)
   })
 
+  it('refuses more guests than the chosen room sleeps', async () => {
+    const { send } = await setup()
+    const tooMany = await send('POST', '/api/bookings', booking({ roomId: 'double-deluxe', adults: 4, children: 1 }))
+    expect(tooMany.status).toBe(400)
+    expect((await tooMany.json()).fields).toEqual({ roomId: 'capacity' })
+    expect((await send('POST', '/api/bookings', booking({ roomId: 'double-deluxe', adults: 1, children: 1 }))).status).toBe(201)
+    // Without a room the hotel finds rooms for the whole group.
+    expect((await send('POST', '/api/bookings', booking({ roomId: '', adults: 4, children: 1 }))).status).toBe(201)
+  })
+
   it('refuses requests sent from another site', async () => {
     const { send } = await setup()
     const res = await send('POST', '/api/bookings', booking(), { origin: 'https://evil.example' })

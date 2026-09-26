@@ -217,6 +217,7 @@ const en: Dict = {
       order: 'Check-out must be after check-in',
       range: 'Up to 60 nights per request',
       guests: 'Please check the number of guests',
+      capacity: 'This room sleeps {{guests}}. Choose another room or fewer guests',
       tooLong: 'The text is too long',
     },
   },

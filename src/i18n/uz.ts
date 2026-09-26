@@ -217,6 +217,7 @@ const uz: Dict = {
       order: 'Ketish sanasi kelish sanasidan keyin boʻlishi kerak',
       range: 'Bitta soʻrovda 60 kechadan koʻp boʻlmasin',
       guests: 'Mehmonlar sonini tekshiring',
+      capacity: 'Bu xonaga {{guests}} sigʻadi. Boshqa xonani tanlang yoki mehmonlar sonini kamaytiring',
       tooLong: 'Matn juda uzun',
     },
   },

@@ -1,7 +1,7 @@
 import type { BookingRequest } from '../content/types'
 import { nightsBetween } from './format'
 
-/** Must match the checks in firestore.rules. */
+/** The site's form and the server (server/app.ts) check requests with the same rules. */
 export const BOOKING_LIMITS = {
   name: 100,
   phone: 30,
@@ -22,6 +22,7 @@ export type BookingErrorCode =
   | 'order'
   | 'range'
   | 'guests'
+  | 'capacity'
   | 'tooLong'
 
 export type BookingErrors = Partial<Record<keyof BookingRequest, BookingErrorCode>>
@@ -29,7 +30,12 @@ export type BookingErrors = Partial<Record<keyof BookingRequest, BookingErrorCod
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PHONE_CHARS = /^\+?[\d\s()-]+$/
 
-export function validateBooking(b: BookingRequest, today: string): BookingErrors {
+/**
+ * Problems in a guest's request, by field. roomGuests is how many guests the chosen room sleeps
+ * (adults and children together); without it, as for "any room", the number is not checked
+ * against a room.
+ */
+export function validateBooking(b: BookingRequest, today: string, roomGuests?: number): BookingErrors {
   const errors: BookingErrors = {}
   const name = b.name.trim()
   const phone = b.phone.trim()
@@ -65,6 +71,7 @@ export function validateBooking(b: BookingRequest, today: string): BookingErrors
     errors.adults = 'guests'
   if (!Number.isInteger(b.children) || b.children < 0 || b.children > BOOKING_LIMITS.maxChildren)
     errors.children = 'guests'
+  else if (!errors.adults && roomGuests !== undefined && b.adults + b.children > roomGuests) errors.roomId = 'capacity'
 
   if (b.message.length > BOOKING_LIMITS.message) errors.message = 'tooLong'
 

@@ -70,8 +70,9 @@ export function BookingBar() {
             {rooms
               .filter((r) => r.visible)
               .map((r) => (
-                <option key={r.id} value={r.id}>
-                  {tr(r.name, lang)}
+                // Rooms too small for the chosen guests cannot be picked.
+                <option key={r.id} value={r.id} disabled={r.guests < guests}>
+                  {tr(r.name, lang)} · {t('units.upToGuests', { count: r.guests })}
                 </option>
               ))}
           </select>

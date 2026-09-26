@@ -36,6 +36,7 @@ const FIELD_ORDER: (keyof BookingRequest)[] = [
   'checkOut',
   'adults',
   'children',
+  'roomId',
   'name',
   'phone',
   'email',
@@ -78,7 +79,10 @@ function BookingForm({ prefill, onClose }: { prefill: BookingPrefill; onClose: (
   const room = visibleRooms.find((r) => r.id === form.roomId)
   const roomName = room ? tr(room.name, lang) : ''
   const nights = nightsBetween(form.checkIn, form.checkOut)
-  const errors: BookingErrors = submitted ? validateBooking(form, today) : {}
+  const guests = form.adults + form.children
+  const found = validateBooking(form, today, room?.guests)
+  // Too many guests for the chosen room is shown right away; other problems once the guest sends.
+  const errors: BookingErrors = submitted ? found : found.roomId ? { roomId: found.roomId } : {}
 
   const set = <K extends keyof BookingRequest>(key: K, value: BookingRequest[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
@@ -119,7 +123,6 @@ function BookingForm({ prefill, onClose }: { prefill: BookingPrefill; onClose: (
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSubmitted(true)
-    const found = validateBooking(form, today)
     const firstInvalid = FIELD_ORDER.find((key) => found[key])
     if (firstInvalid) {
       document.getElementById(`${uid}-${firstInvalid}`)?.focus()
@@ -149,7 +152,7 @@ function BookingForm({ prefill, onClose }: { prefill: BookingPrefill; onClose: (
   const error = (key: keyof BookingRequest) =>
     errors[key] ? (
       <span id={`${uid}-${key}-error`} className="field__error">
-        {t(`booking.errors.${errors[key]}`)}
+        {t(`booking.errors.${errors[key]}`, { guests: room ? t('units.upToGuests', { count: room.guests }) : '' })}
       </span>
     ) : null
 
@@ -271,17 +274,18 @@ function BookingForm({ prefill, onClose }: { prefill: BookingPrefill; onClose: (
             </select>
           </Field>
           {visibleRooms.length > 0 && (
-            <Field label={t('booking.room')} htmlFor={`${uid}-roomId`} wide>
+            <Field label={t('booking.room')} htmlFor={`${uid}-roomId`} error={error('roomId')} wide>
               <select
-                id={`${uid}-roomId`}
+                {...fieldProps('roomId')}
                 className="field__control"
                 value={form.roomId}
                 onChange={(e) => set('roomId', e.target.value)}
               >
                 <option value="">{t('booking.anyRoom')}</option>
                 {visibleRooms.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {tr(r.name, lang)}
+                  // Rooms too small for the chosen guests cannot be picked.
+                  <option key={r.id} value={r.id} disabled={r.guests < guests}>
+                    {tr(r.name, lang)} · {t('units.upToGuests', { count: r.guests })}
                     {r.priceUzs > 0 ? ` — ${formatUzs(r.priceUzs, lang)}` : ''}
                   </option>
                 ))}

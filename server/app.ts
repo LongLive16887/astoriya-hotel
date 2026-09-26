@@ -171,12 +171,12 @@ export function createApp({ db, config, events = new EventHub(), now = Date.now 
     }
     const request = parseBookingRequest(await readJson(c))
     if (!request) return c.json({ error: 'invalid' }, 400)
-    // Two days of slack for guests in time zones behind the server.
-    const errors = validateBooking(request, addDaysIso(todayIso(new Date(now())), -2))
-    if (Object.keys(errors).length) return c.json({ error: 'invalid', fields: errors }, 400)
-    // The room name comes from the site content, not from the request.
+    // The room, its name and how many guests it sleeps come from the site content, not from the request.
     const rooms = normalizeListDoc('rooms', getContent(db, 'rooms')?.data)
     const room = rooms.find((r) => r.visible && r.id === request.roomId)
+    // Two days of slack for guests in time zones behind the server.
+    const errors = validateBooking(request, addDaysIso(todayIso(new Date(now())), -2), room?.guests)
+    if (Object.keys(errors).length) return c.json({ error: 'invalid', fields: errors }, 400)
     const roomName = room ? room.name[request.lang] || room.name.ru || room.name.en || room.name.uz : ''
     const booking = createBooking(
       db,

@@ -52,6 +52,19 @@ describe('validateBooking', () => {
     expect(errorsFor({ children: -1 }).children).toBe('guests')
   })
 
+  it('checks the guests against the chosen room', () => {
+    const forRoom = (adults: number, children: number, roomGuests?: number) =>
+      validateBooking({ ...valid, adults, children }, TODAY, roomGuests)
+    expect(forRoom(4, 1, 2).roomId).toBe('capacity')
+    expect(forRoom(2, 1, 2).roomId).toBe('capacity')
+    expect(forRoom(2, 0, 2)).toEqual({})
+    expect(forRoom(1, 1, 2)).toEqual({})
+    // "Any room": the hotel picks rooms for the group.
+    expect(forRoom(4, 1)).toEqual({})
+    // A wrong number of guests is reported as such, not as a room that is too small.
+    expect(forRoom(11, 0, 4)).toEqual({ adults: 'guests' })
+  })
+
   it('limits the message length', () => {
     expect(errorsFor({ message: 'x'.repeat(1001) }).message).toBe('tooLong')
   })
