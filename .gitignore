@@ -29,3 +29,8 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Local database, server build and release packages
+data/
+build/
+release/

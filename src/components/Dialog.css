@@ -1,0 +1,73 @@
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+.dialog {
+  width: min(100% - 32px, 640px);
+  max-width: none;
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--ivory);
+  color: var(--ink-2);
+  box-shadow: var(--shadow-lg);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.dialog[open] {
+  animation: dialog-in 0.35s var(--ease);
+}
+
+.dialog::backdrop {
+  background: rgb(13 29 25 / 0.62);
+  backdrop-filter: blur(3px);
+}
+
+.dialog[open]::backdrop {
+  animation: backdrop-in 0.35s var(--ease);
+}
+
+.dialog__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: var(--ink);
+  background: rgb(247 242 234 / 0.9);
+  transition: background-color 0.2s var(--ease);
+}
+
+.dialog__close:hover {
+  background: var(--sand);
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .dialog--sheet {
+    width: 100%;
+    max-height: 100dvh;
+    height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+  }
+}

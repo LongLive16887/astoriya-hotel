@@ -1,0 +1,110 @@
+name: Server setup
+
+# Looks at the server and, when deploy/config.env says SETUP_MODE=install, installs everything the
+# site needs (its own Node.js, the service, backups, the web server config with HTTPS) and the
+# current build. Other projects on the server are left alone. Runs when deploy/ changes, or by hand.
+#
+# Secrets (Settings → Secrets and variables → Actions), as in the owner's other projects:
+# VPS_HOST, VPS_USER and VPS_SSH_KEY; or SERVER_SSH_PASSWORD with the root password.
+
+on:
+  push:
+    branches: [main, claude/website-redesign-d2u64y]
+    paths:
+      - deploy/**
+      - .github/workflows/server-setup.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: server
+  cancel-in-progress: false
+
+jobs:
+  setup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      SERVER_SSH_PASSWORD: ${{ secrets.SERVER_SSH_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Connect to the server
+        run: bash deploy/ci/connect.sh
+
+      # The report may describe other projects on the server; it is printed encrypted.
+      - name: Look at the server (read-only, encrypted report)
+        run: |
+          . deploy/config.env
+          dir="$(server-put deploy/server/inspect.sh deploy/server/bootstrap.pub)"
+          server-ssh "bash $dir/inspect.sh $dir/bootstrap.pub '$DOMAIN'; rm -rf $dir"
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Build the site
+        run: |
+          . deploy/config.env
+          if [ "${SETUP_MODE:-inspect}" != install ]; then echo "SETUP_MODE is not install: only looking."; exit 0; fi
+          if [ -n "$DOMAIN" ]; then export VITE_SITE_URL="https://$DOMAIN"; fi
+          npm ci
+          npm run build
+          npm run package
+
+      - name: Install on the server
+        run: |
+          . deploy/config.env
+          if [ "${SETUP_MODE:-inspect}" != install ]; then exit 0; fi
+          dir="$(server-put deploy/server release/astoria-${{ github.sha }}.tar.gz)"
+          server-ssh "DOMAIN='$DOMAIN' WWW='$WWW' WEB='${WEB:-}' ADMIN_EMAIL='$ADMIN_EMAIL' RELEASE='$dir/astoria-${{ github.sha }}.tar.gz' bash $dir/server/setup.sh; status=\$?; rm -rf $dir; exit \$status"
+
+      - name: Check the site from outside
+        run: |
+          . deploy/config.env
+          if [ "${SETUP_MODE:-inspect}" != install ]; then exit 0; fi
+          host="$(printf '%s' "${VPS_HOST:-$SERVER_HOST}" | tr -d '[:space:]')"
+          if [ -z "$DOMAIN" ]; then
+            # Other sites on the server may answer on its address, so only the site's own reply counts.
+            if curl -fsS --max-time 20 "http://$host/api/health" 2>/dev/null | grep -q '"version"'; then echo "The site answers on http://$host"
+            else echo "::notice::The site is installed and running on the server. It is published once DOMAIN is set in deploy/config.env."; fi
+            exit 0
+          fi
+          # Until the domain's DNS points to the server, the site cannot be reached through it.
+          server_ips="$(getent ahostsv4 "$host" | awk '{print $1}' | sort -u)"
+          domain_ips="$(getent ahostsv4 "$DOMAIN" | awk '{print $1}' | sort -u)"
+          if [ -z "$domain_ips" ] || [ -n "$(comm -23 <(echo "$domain_ips") <(echo "$server_ips"))" ]; then
+            echo "::warning::$DOMAIN does not point to the server yet (DNS gives: $(echo $domain_ips)). The site is set up for it; once DNS points here, run this workflow again for the HTTPS certificate."
+            exit 0
+          fi
+          # The page, its script and the API, as a visitor's browser loads them.
+          site_answers() {
+            curl -fsS --max-time 20 "https://$DOMAIN/api/health" | grep '"version"' || return 1
+            page="$(curl -fsS --max-time 20 "https://$DOMAIN/")" || return 1
+            script="$(printf '%s' "$page" | grep -o '/assets/index-[^"]*\.js' | head -1)"
+            [ -n "$script" ] && curl -fsS --max-time 20 -o /dev/null "https://$DOMAIN$script" || return 1
+            curl -fsS --max-time 20 -o /dev/null "https://www.$DOMAIN/" || [ "$WWW" != 1 ] || return 1
+            echo "https://$DOMAIN: page, $script and API answer"
+          }
+          for i in $(seq 1 12); do
+            site_answers && exit 0
+            echo "https://$DOMAIN does not answer yet, retrying…"
+            sleep 10
+          done
+          # Only the site's own reply counts: another server block may answer for the domain.
+          echo "What answers for $DOMAIN from outside:"
+          curl -sSI --max-time 20 "http://$DOMAIN/api/health" | grep -iE '^(HTTP|location|server):' | sed 's/^/  http:  /'
+          curl -svk -o /dev/null --max-time 20 "https://$DOMAIN/" 2>&1 | grep -E 'subject:|subjectAltName' | sed 's/^/  https: /'
+          if curl -fsS --max-time 20 "http://$DOMAIN/api/health" | grep -q '"version"'; then
+            echo "::warning::$DOMAIN answers over HTTP only: the certificate is not issued yet (run this workflow again later)."
+            exit 0
+          fi
+          echo "::error::$DOMAIN points to the server, but the site does not answer for it (see above)."
+          exit 1

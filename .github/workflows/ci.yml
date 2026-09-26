@@ -1,0 +1,101 @@
+name: CI/CD
+
+# Every pull request and every commit on main is linted, tested and built. A commit on main is
+# then installed on the server over SSH (the same secrets as the Server setup workflow);
+# deploy/server/astoria-deploy.sh backs up the database and rolls back a build that does not start.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Lint, test, build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Site address for link previews
+        run: |
+          . deploy/config.env
+          if [ -n "$DOMAIN" ]; then echo "VITE_SITE_URL=https://$DOMAIN" >> "$GITHUB_ENV"; fi
+
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+      - name: Package the release
+        if: github.event_name == 'push'
+        run: npm run package
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
+        with:
+          name: release
+          path: release/
+          retention-days: 7
+
+  deploy:
+    name: Deploy to the server
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    concurrency:
+      group: server
+      cancel-in-progress: false
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      SERVER_SSH_PASSWORD: ${{ secrets.SERVER_SSH_PASSWORD }}
+      SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: release
+
+      - name: Connect to the server
+        run: bash deploy/ci/connect.sh
+
+      # Backs up the database, switches to the new build, waits for /api/health and rolls back if it fails.
+      - name: Install the build
+        run: |
+          dir="$(server-put "release/astoria-$SHA.tar.gz")"
+          server-ssh "
+            if [ ! -x /opt/astoria/bin/astoria-deploy ]; then echo 'The server is not set up yet: run the Server setup workflow.'; rm -rf $dir; exit 1; fi
+            /opt/astoria/bin/astoria-deploy --file $dir/astoria-$SHA.tar.gz; status=\$?; rm -rf $dir; exit \$status"
+
+      - name: Check the site from outside
+        run: |
+          . deploy/config.env
+          [ -n "$DOMAIN" ] || exit 0
+          host="$(printf '%s' "${VPS_HOST:-$SERVER_HOST}" | tr -d '[:space:]')"
+          server_ips="$(getent ahostsv4 "$host" | awk '{print $1}' | sort -u)"
+          domain_ips="$(getent ahostsv4 "$DOMAIN" | awk '{print $1}' | sort -u)"
+          if [ -z "$domain_ips" ] || [ -n "$(comm -23 <(echo "$domain_ips") <(echo "$server_ips"))" ]; then
+            echo "::warning::$DOMAIN does not point to the server yet (DNS gives: $(echo $domain_ips)), so the site was not checked from outside."
+            exit 0
+          fi
+          version="$(curl -fsS --max-time 20 "https://$DOMAIN/api/health" | sed -n 's/.*"version":"\([^"]*\)".*/\1/p')"
+          if [ "$version" = "$SHA" ]; then echo "https://$DOMAIN runs $SHA"; else echo "::error::https://$DOMAIN reports ${version:-nothing}"; exit 1; fi

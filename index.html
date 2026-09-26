@@ -1,23 +1,98 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Astoria Boutique & SPA — бутик-отель в Самарканде</title>
+    <meta
+      name="description"
+      content="Бутик-отель в центре Самарканда: элегантные номера с завтраком, крытый бассейн, сауна и хаммам, терраса с видом на город. Бронирование онлайн."
+    />
+    <meta name="theme-color" content="#173029" />
+    <link rel="canonical" href="%SITE_URL%/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/logo.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Astoriya</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Astoria Boutique & SPA" />
+    <meta property="og:title" content="Astoria Boutique & SPA — бутик-отель в Самарканде" />
+    <meta
+      property="og:description"
+      content="Элегантные номера, крытый бассейн, сауна и хаммам, терраса с видом на Самарканд."
+    />
+    <meta property="og:url" content="%SITE_URL%/" />
+    <meta property="og:image" content="%SITE_URL%/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
 
-  <!-- Add necessary CDN -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" />
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
-  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
-  <script src="https://kit.fontawesome.com/18cbcebdd2.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-</head>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Hotel",
+        "name": "Astoria Boutique & SPA",
+        "description": "Boutique hotel with a SPA in the centre of Samarkand: indoor pool, sauna, hammam, terrace with city views and buffet breakfast.",
+        "telephone": "+998557050010",
+        "url": "%SITE_URL%/",
+        "image": "%SITE_URL%/images/facade.webp",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Abdurahmon Jomiy ko'chasi, 98",
+          "addressLocality": "Samarqand",
+          "addressCountry": "UZ"
+        },
+        "geo": { "@type": "GeoCoordinates", "latitude": 39.648261, "longitude": 66.956892 },
+        "checkinTime": "14:00",
+        "checkoutTime": "12:00",
+        "amenityFeature": [
+          { "@type": "LocationFeatureSpecification", "name": "Indoor pool", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Sauna", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Hammam", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Free Wi-Fi", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "24-hour front desk", "value": true }
+        ],
+        "sameAs": [
+          "https://t.me/astoria_boutique_hotel",
+          "https://www.instagram.com/astoria_boutique_hotel_/"
+        ]
+      }
+    </script>
 
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>
-
+    <style>
+      /* Shown until the app starts; mirrors src/components/Splash. */
+      .boot {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: #173029;
+        color: #d4b688;
+      }
+      .boot svg {
+        width: 64px;
+        animation: boot-pulse 1.6s ease-in-out infinite;
+      }
+      @keyframes boot-pulse {
+        50% {
+          opacity: 0.45;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="boot">
+        <svg viewBox="0 0 118.6 100" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M0 100L11.2 100L26.6 67.3L35.8 67.3L40.4 57.4L31.4 57.4L48.4 21.5L64.3 55.4L75.4 55.4L49.7 0L47.3 0ZM22.5 100L33.6 100L49 67.3L92.3 67.3L107.8 100L118.6 100L72.1 0L69.6 0L60.5 19.1L66.3 31L70.9 21.5L87.6 57.4L53.8 57.4L58.6 47L52.8 35.4ZM70.9 69.3L85.5 100L96.2 100L82.2 69.3Z"
+          />
+        </svg>
+      </div>
+    </div>
+    <noscript>Astoria Boutique &amp; SPA · +998 55 705 00 10 · Abdurahmon Jomiy ko'chasi, 98, Samarqand</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

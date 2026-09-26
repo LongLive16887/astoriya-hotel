@@ -1,0 +1,31 @@
+[Unit]
+Description=Astoria hotel site API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=astoria
+Group=astoria
+EnvironmentFile=/etc/astoria/astoria.env
+WorkingDirectory=/opt/astoria/current
+ExecStart=/opt/astoria/node/bin/node --disable-warning=ExperimentalWarning /opt/astoria/current/server/index.mjs
+Restart=always
+RestartSec=3
+# The database and backups are readable by the service user only.
+UMask=0027
+
+# The service only needs to write its data folder.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ReadWritePaths=/var/lib/astoria
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target
